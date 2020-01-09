@@ -203,6 +203,15 @@
   </url>
   
   <url>
+    <loc>/project/my-new-project/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/project/awesome-project/</loc>
+  </url>
+  
+  <url>
     <loc>/courses/</loc>
   </url>
   
