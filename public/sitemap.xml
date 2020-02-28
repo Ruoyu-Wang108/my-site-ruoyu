@@ -34,7 +34,7 @@
   
   <url>
     <loc>/tags/academic/</loc>
-    <lastmod>2020-01-09T15:05:12-08:00</lastmod>
+    <lastmod>2020-02-18T15:05:12-08:00</lastmod>
   </url>
   
   <url>
@@ -49,17 +49,27 @@
   
   <url>
     <loc>/tags/plot/</loc>
-    <lastmod>2020-01-09T15:05:12-08:00</lastmod>
+    <lastmod>2020-02-18T15:05:12-08:00</lastmod>
   </url>
   
   <url>
     <loc>/project/</loc>
-    <lastmod>2020-01-09T15:05:12-08:00</lastmod>
+    <lastmod>2020-02-18T15:05:12-08:00</lastmod>
   </url>
   
   <url>
     <loc>/tags/</loc>
-    <lastmod>2020-01-09T15:05:12-08:00</lastmod>
+    <lastmod>2020-02-18T15:05:12-08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/time-series/</loc>
+    <lastmod>2020-02-18T15:05:12-08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/project/time-series/</loc>
+    <lastmod>2020-02-18T15:05:12-08:00</lastmod>
   </url>
   
   <url>
@@ -205,10 +215,6 @@
   <url>
     <loc>/publication/conference-paper/</loc>
     <lastmod>2013-07-01T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/project/awesome-project/</loc>
   </url>
   
   <url>
