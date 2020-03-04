@@ -20,13 +20,13 @@
       <description>
 
 
+&lt;div id=&#34;introduction&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;1. Introduction&lt;/h3&gt;
+&lt;p&gt;Bonneville Dam, located on the Columbia River, is one of the biggest hydroelectric systems in the world (Desiree Ramirez, 2019). However, the presence of dam would block the reproducing and rearing habitats of many fishes, including salmon and steelhead (Northwest Power and Conservation Council, 2015). To alleviate the negative effects on fish, Hatchery utilities were built in 1909 and renovated in 1957 and 1998 (Oregon Department of Fish &amp;amp; Wildlife, 2019). In this report, we will analysis and visualize time series data for adult steelhead salmon passage across the Bonneville Dam from 1939 - 2019.&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;Bonneville_Dam.jpg&#34; width=&#34;50%&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;&lt;em&gt;Figure. 1(a)&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;Bonneville Dam Spillway photo by Kirt Edblom on &lt;a href=&#34;https://www.flickr.com/photos/kirt_edblom/14150670993/in/photostream/&#34;&gt;flickr&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;Steelhead.jpg&#34; width=&#34;50%&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;&lt;em&gt;Figure. 1(b)&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;Oncorhynchus mykiss (Steelhead) at the Oregon Zoo Picture by User: Cacophony, published on &lt;a href=&#34;https://commons.wikimedia.org/wiki/File:Steelhead.jpg&#34;&gt;Wikimedia Commons&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
-&lt;div id=&#34;introduction&#34; class=&#34;section level3&#34;&gt;
-&lt;h3&gt;1. Introduction&lt;/h3&gt;
-&lt;p&gt;Bonneville Dam, located on the Columbia River, is one of the biggest hydroelectric systems in the world (Desiree Ramirez, 2019). However, the presence of dam would block the reproducing and rearing habitats of many fishes, including salmon and steelhead (Northwest Power and Conservation Council, 2015). To alleviate the negative effects on fish, Hatchery utilities were built in 1909 and renovated in 1957 and 1998 (Oregon Department of Fish &amp;amp; Wildlife, 2019). In this report, we will analysis and visualize time series data for adult steelhead salmon passage across the Bonneville Dam from 1939 - 2019.&lt;/p&gt;
 &lt;/div&gt;
 &lt;div id=&#34;data-analysis&#34; class=&#34;section level3&#34;&gt;
 &lt;h3&gt;2. Data analysis&lt;/h3&gt;
