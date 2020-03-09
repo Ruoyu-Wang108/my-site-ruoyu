@@ -29,22 +29,6 @@
     </item>
     
     <item>
-      <title>Deep Learning</title>
-      <link>/tags/deep-learning/</link>
-      <pubDate>Thu, 09 Jan 2020 00:00:00 +0000</pubDate>
-      <guid>/tags/deep-learning/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>plot</title>
-      <link>/tags/plot/</link>
-      <pubDate>Thu, 09 Jan 2020 00:00:00 +0000</pubDate>
-      <guid>/tags/plot/</guid>
-      <description></description>
-    </item>
-    
-    <item>
       <title>R</title>
       <link>/tags/r/</link>
       <pubDate>Thu, 09 Jan 2020 00:00:00 +0000</pubDate>
@@ -69,10 +53,26 @@
     </item>
     
     <item>
+      <title>Statictis</title>
+      <link>/tags/statictis/</link>
+      <pubDate>Wed, 06 Nov 2019 15:05:12 -0800</pubDate>
+      <guid>/tags/statictis/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>Sustainable Business</title>
       <link>/tags/sustainable-business/</link>
       <pubDate>Fri, 01 Nov 2019 00:00:00 +0000</pubDate>
       <guid>/tags/sustainable-business/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Deep Learning</title>
+      <link>/tags/deep-learning/</link>
+      <pubDate>Wed, 27 Apr 2016 00:00:00 +0000</pubDate>
+      <guid>/tags/deep-learning/</guid>
       <description></description>
     </item>
     

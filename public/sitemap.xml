@@ -58,17 +58,7 @@
   </url>
   
   <url>
-    <loc>/tags/deep-learning/</loc>
-    <lastmod>2020-01-09T15:05:12-08:00</lastmod>
-  </url>
-  
-  <url>
     <loc>/project/my-new-project/</loc>
-    <lastmod>2020-01-09T15:05:12-08:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/tags/plot/</loc>
     <lastmod>2020-01-09T15:05:12-08:00</lastmod>
   </url>
   
@@ -113,6 +103,16 @@
   </url>
   
   <url>
+    <loc>/tags/statictis/</loc>
+    <lastmod>2019-11-06T15:05:12-08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/project/2s_ttest/</loc>
+    <lastmod>2019-11-06T15:05:12-08:00</lastmod>
+  </url>
+  
+  <url>
     <loc>/post/dove/</loc>
     <lastmod>2019-11-01T00:00:00+00:00</lastmod>
   </url>
@@ -133,6 +133,11 @@
   </url>
   
   <url>
+    <loc>/tags/deep-learning/</loc>
+    <lastmod>2016-04-27T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
     <loc>/tags/demo/</loc>
     <lastmod>2016-04-27T00:00:00+00:00</lastmod>
   </url>
@@ -148,11 +153,19 @@
   </url>
   
   <url>
+    <loc>/project/kai-test/</loc>
+  </url>
+  
+  <url>
     <loc>/categories/</loc>
   </url>
   
   <url>
     <loc>/courses/</loc>
+  </url>
+  
+  <url>
+    <loc>/project/206_final/</loc>
   </url>
   
   <url>

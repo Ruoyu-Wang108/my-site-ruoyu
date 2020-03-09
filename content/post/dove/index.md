@@ -19,7 +19,7 @@ image:
 #   ac convallis placerat. Proin tincidunt magna sed ex sollicitudin condimentum.
 tags:
 - Sustainable Business
-title: Green Product Line Advice for Dove
+title: Green Product Line Recommendation for Dove
 # url_code: ""
 # url_dataset: ""
 # url_pdf: http://arxiv.org/pdf/1512.04133v1
