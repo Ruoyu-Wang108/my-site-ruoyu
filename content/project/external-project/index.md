@@ -1,11 +1,12 @@
 ---
 date: "2016-04-27T00:00:00Z"
-external_link: http://example.org
+external_link: https://ruoyuwang.shinyapps.io/GreenFootprint/
 image:
-  caption: Photo by Toa Heftiba on Unsplash
+  caption: Image by Shuhan Song
   focal_point: Smart
-summary: An example of linking directly to an external project website using `external_link`.
+summary: An interactive website app with shinyapp for **Womxn/Hacks** - UCSB's 2nd all-female hackathon.
 tags:
+- R
 - Demo
-title: External Project
+title: Green Footprint
 ---

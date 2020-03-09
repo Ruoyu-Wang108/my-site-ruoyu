@@ -6,10 +6,10 @@ slug: time-series
 categories: []
 tags:
   - Time series
-  - plot
+  - R
   - Academic
 subtitle: 'Adult steelhead salmon passage across the Bonneville Dam in 1939-2019'
-summary: ''
+summary: 'In this report, we will analysis and visualize time series data for adult steelhead salmon passage across the Bonneville Dam from 1939 - 2019.'
 lastmod: '2020-02-18T15:05:12-08:00'
 featured: no
 image:
