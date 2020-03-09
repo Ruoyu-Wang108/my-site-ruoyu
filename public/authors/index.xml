@@ -5,7 +5,7 @@
     <link>/authors/</link>
       <atom:link href="/authors/index.xml" rel="self" type="application/rss+xml" />
     <description>Authors</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>2020</copyright><lastBuildDate>Sun, 07 Apr 2019 00:00:00 +0000</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>2020</copyright><lastBuildDate>Fri, 14 Feb 2020 00:00:00 +0000</lastBuildDate>
     <image>
       <url>/images/icon_hu0b7a4cb9992c9ac0e91bd28ffd38dd00_9727_512x512_fill_lanczos_center_2.png</url>
       <title>Authors</title>
@@ -15,7 +15,7 @@
     <item>
       <title></title>
       <link>/authors/admin/</link>
-      <pubDate>Sun, 07 Apr 2019 00:00:00 +0000</pubDate>
+      <pubDate>Fri, 14 Feb 2020 00:00:00 +0000</pubDate>
       <guid>/authors/admin/</guid>
       <description>&lt;p&gt;Ruoyu Wang is a master candidate majoring in Environmental Science and Management at Bren school in University of California, Santa Barbara. Her specialization is Climate and Energy with Environmental data science focus. Highlighted projects she engaged in, including sampling and monitoring water pollutants, designing and composting food waste, and selenium-riched mushroom cultivation and feasibility analysis. The past experience in research and curriculum laid a solid foundation of experimental and self-study abilities.&lt;/p&gt;
 &lt;p&gt;王若宇，加州大学圣塔芭芭拉分校环境科学与管理硕士研究生在读。她的研究方向为气候与能源，并以环境数据科学为重点。她参与的实验项目包括水体污染采样与分析，堆肥与垃圾转运管理，富硒食用菌的培养与前景预测。过去的经验及课程为她打下了良好的实验基础和极强的自学分析能力。&lt;/p&gt;
@@ -23,10 +23,18 @@
     </item>
     
     <item>
-      <title>Robert Ford</title>
-      <link>/authors/robert-ford/</link>
-      <pubDate>Tue, 01 Sep 2015 00:00:00 +0000</pubDate>
-      <guid>/authors/robert-ford/</guid>
+      <title>Joanne Pham</title>
+      <link>/authors/joanne-pham/</link>
+      <pubDate>Fri, 22 Nov 2019 00:00:00 +0000</pubDate>
+      <guid>/authors/joanne-pham/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Leana Goetze</title>
+      <link>/authors/leana-goetze/</link>
+      <pubDate>Fri, 22 Nov 2019 00:00:00 +0000</pubDate>
+      <guid>/authors/leana-goetze/</guid>
       <description></description>
     </item>
     
