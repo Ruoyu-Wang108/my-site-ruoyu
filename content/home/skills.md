@@ -21,6 +21,12 @@ subtitle = ""
   description = "90%"
   
 [[feature]]
+  icon = "globe-americas"
+  icon_pack = "fas"
+  name = "Spatial Analysis"
+  description = "70%"
+  
+[[feature]]
   icon = "chart-line"
   icon_pack = "fas"
   name = "Statistics"
