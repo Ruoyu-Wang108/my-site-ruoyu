@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Time series | 王若宇</title>
+    <link>/zh/tags/time-series/</link>
+      <atom:link href="/zh/tags/time-series/index.xml" rel="self" type="application/rss+xml" />
+    <description>Time series</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>zh</language><copyright>2020</copyright><lastBuildDate>Thu, 09 Jan 2020 00:00:00 +0000</lastBuildDate>
+    <image>
+      <url>/images/icon_hu0b7a4cb9992c9ac0e91bd28ffd38dd00_9727_512x512_fill_lanczos_center_2.png</url>
+      <title>Time series</title>
+      <link>/zh/tags/time-series/</link>
+    </image>
+    
+    <item>
+      <title>Time series exploration and visualization</title>
+      <link>/zh/project/time-series/</link>
+      <pubDate>Thu, 09 Jan 2020 00:00:00 +0000</pubDate>
+      <guid>/zh/project/time-series/</guid>
+      <description>
+
+
+&lt;div id=&#34;introduction&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;1. Introduction&lt;/h3&gt;
+&lt;p&gt;Bonneville Dam, located on the Columbia River, is one of the biggest hydroelectric systems in the world (Desiree Ramirez, 2019). However, the presence of dam would block the reproducing and rearing habitats of many fishes, including salmon and steelhead (Northwest Power and Conservation Council, 2015). To alleviate the negative effects on fish, Hatchery utilities were built in 1909 and renovated in 1957 and 1998 (Oregon Department of Fish &amp;amp; Wildlife, 2019). In this report, we will analysis and visualize time series data for adult steelhead salmon passage across the Bonneville Dam from 1939 - 2019.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;Steelhead.jpg&#34; width=&#34;60%&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;&lt;em&gt;Figure. 1&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;Oncorhynchus mykiss (Steelhead) at the Oregon Zoo Picture by User: Cacophony, published on &lt;a href=&#34;https://commons.wikimedia.org/wiki/File:Steelhead.jpg&#34;&gt;Wikimedia Commons&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;data-analysis&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;2. Data analysis&lt;/h3&gt;
+&lt;div id=&#34;a.-daily-data-time-series-plot-for-adult-steelhead-passage&#34; class=&#34;section level5&#34;&gt;
+&lt;h5&gt;a. Daily data time series plot for adult steelhead passage&lt;/h5&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Combine the year, month and day and transform into date class in a new column
+
+steelhead_date &amp;lt;- steelhead %&amp;gt;% 
+  mutate(date = paste(year, mm_dd, sep = &amp;quot;-&amp;quot;)) %&amp;gt;% 
+  mutate(date_new = lubridate::ydm(date)) %&amp;gt;%
+  drop_na(date_new) 
+# remove NA date, normally unexisted date: for example Feb 29, 2019 didn&amp;#39;t exist, it was transformed to NA&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Draw a daily passage line plot
+ggplot(data = steelhead_date, aes(x = date_new, y = value))+
+  geom_line(aes(color = year), show.legend = FALSE)+
+  labs(x = &amp;quot;Date&amp;quot;, y = &amp;quot;Adult passage number (fish/day)&amp;quot;)+
+  scale_color_paletteer_c(&amp;quot;grDevices::rainbow&amp;quot;)+
+  theme_minimal()&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/project/time-series/index_files/figure-html/daily_figure-1.png&#34; width=&#34;768&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;&lt;em&gt;Figure. 2&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;Daily adult steelhead passage through Bonneville Dam. Different colors represent different years. Data source: Data from: Columbia Basin Research Available here: &lt;a href=&#34;http://www.cbr.washington.edu/dart/query/adult_graph_text&#34;&gt;Adult fish passage&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;b.-seasonplot-showing-monthly-passage-variation&#34; class=&#34;section level5&#34;&gt;
+&lt;h5&gt;b. Seasonplot showing monthly passage variation&lt;/h5&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Put month and year in seprate columns
+steelhead_parsed &amp;lt;- steelhead_date %&amp;gt;% 
+  mutate(month = month(date_new, label = TRUE)) %&amp;gt;% 
+  mutate(date_ym = yearmonth(date_new))
+
+
+# Group and calcuate data for seasonal plot
+steel_season &amp;lt;- steelhead_parsed %&amp;gt;% 
+  group_by(year, month) %&amp;gt;% 
+  summarize(
+    monthly_total = sum(value, na.rm = TRUE)
+  )
+
+
+# Calculate the monthly total for tsibble
+steel_monthly &amp;lt;- steelhead_parsed%&amp;gt;% 
+  group_by(date_ym) %&amp;gt;% 
+  summarize(
+    monthly_total = sum(value, na.rm = TRUE)
+  ) %&amp;gt;% 
+  mutate(location = &amp;quot;Bon&amp;quot;)
+
+# convert the monthly table into tsibble format
+steel_ts &amp;lt;- as_tsibble(steel_monthly, key = &amp;quot;location&amp;quot;, index = &amp;quot;date_ym&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Seasonal plot
+ggplot(data = steel_season, aes(x = month, y = monthly_total, group = year))+
+  geom_line(aes(color = year))+
+  scale_color_paletteer_c(&amp;quot;pals::kovesi.diverging_rainbow_bgymr_45_85_c67&amp;quot;)+
+  labs(x = &amp;quot;&amp;quot;, y = &amp;quot;Monthly adult steelhead passage (fish/month)&amp;quot;, color = &amp;quot;Year&amp;quot;)+
+  theme_minimal()&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/project/time-series/index_files/figure-html/seasonal_plot-1.png&#34; width=&#34;768&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;&lt;em&gt;Figure. 3&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;A seasonplot of adult steelhead passage across Bonneville Dam in different months for each year. The years present in different colors. From the past to the present, the color changes from blue to green, yellow and red. Data source: Data from: Columbia Basin Research Available here: &lt;a href=&#34;http://www.cbr.washington.edu/dart/query/adult_graph_text&#34;&gt;Adult fish passage&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;We can see strong and consistent pattern of the monthly passage amount within one year. The annual peaks often occur in August. Summer to early fall (July to September) is the main migration season for steelhead in this area. Besides, the size of migration seemed to grow recently. Most monthly passage amounts after 2000 (lines in red color) were relatively higher than those before 2000 (lines in colors other than red), especially in peak months.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;c.-annual-steelhead-passage-graph&#34; class=&#34;section level5&#34;&gt;
+&lt;h5&gt;c. Annual steelhead passage graph&lt;/h5&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Calculate the annual total/yearly total
+steel_year &amp;lt;- steelhead_date %&amp;gt;% 
+  group_by(year) %&amp;gt;% 
+  summarize(
+    year_total = sum(value, na.rm = TRUE)
+  ) &lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Make a bar graph for annual total
+ggplot(data = steel_year, aes(x = year, y = year_total)) +
+  geom_col(aes(fill = year), 
+           width = 1, 
+           color = &amp;quot;white&amp;quot;,
+           show.legend = FALSE)+
+  scale_fill_paletteer_c(&amp;quot;pals::kovesi.diverging_rainbow_bgymr_45_85_c67&amp;quot;)+
+  labs(x = &amp;quot;Year&amp;quot;, 
+       y = &amp;quot;Annual adult steelhead passage (fish/year)&amp;quot;)+
+  scale_x_continuous(breaks = c(1939, 1950, 1960, 1970, 1980, 1990, 2000, 2010, 2019))+
+  theme_minimal()&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/project/time-series/index_files/figure-html/annual_plot-1.png&#34; width=&#34;768&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;&lt;em&gt;Figure. 4&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;Annual amount plot shows the fluctuation of the migration amounts during 1939-2019. Each column indicates the annual passage amount in the specific year. Data source: Data from: Columbia Basin Research Available here: &lt;a href=&#34;http://www.cbr.washington.edu/dart/query/adult_graph_text&#34;&gt;Adult fish passage&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;According to the Oregon Department of Fish &amp;amp; Wildlife, fish protection facilities renovations were in 1957 and 1998. Because our data only includes adult fish passage, normally there would be a time lag between spawning and increasing whole population. In this annual plot, we could see a huge rise in 2001, which was three years later than the 1998 project. However, no visible improvement happened after the 1957 program.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;d.-explore-decomposition-and-analysis-the-time-series-data&#34; class=&#34;section level5&#34;&gt;
+&lt;h5&gt;d. Explore, decomposition and analysis the time series data&lt;/h5&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Decomposite the steelhead data
+dcmp &amp;lt;- steel_ts %&amp;gt;% 
+  model(STL(monthly_total ~ season(window = 3)))
+
+# Plot each components of the steelhead data
+components(dcmp) %&amp;gt;% autoplot() +
+  labs(title = &amp;quot;STL Decomposition&amp;quot;,
+       subtitle = &amp;quot;Monthly passage = trend + season_year-month + remainder&amp;quot;,
+       x = &amp;quot;Date (year-month)&amp;quot;)+
+  theme_minimal()&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/project/time-series/index_files/figure-html/unnamed-chunk-1-1.png&#34; width=&#34;864&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;&lt;em&gt;Figure. 5&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;Decomposition of the time series passage data during 1939-2019. Data source: Data from: Columbia Basin Research Available here: &lt;a href=&#34;http://www.cbr.washington.edu/dart/query/adult_graph_text&#34;&gt;Adult fish passage&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;From the original data, we could see strong seasonality, no clearly overall trend and cyclical trend. Considering the peak months are from July to August, we choose 3 as the window width. The trend in decomposition plot catches the changes in the original graph. The seasonal also contains the yearly peak feature. Additionally, the residuals seem relatively random.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Use the autocorrelation function (ACF) to further examine the seasonality
+steel_ts %&amp;gt;% 
+  ACF(monthly_total) %&amp;gt;% 
+  autoplot()+
+  theme_minimal()&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/project/time-series/index_files/figure-html/acf-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;&lt;em&gt;Figure. 6&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;The autocorrelation function (ACF) of the time series passage data in 1939-2019. It shows the correlation of a time series data with itself. Data source: Columbia Basin Research Available here: &lt;a href=&#34;http://www.cbr.washington.edu/dart/query/adult_graph_text&#34;&gt;Adult fish passage&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;We can observe strong seasonality in this data. For example, months 3-9 are positively correlated with each other. Positive correlation also happens in month 10-14. While these two group are negatively correlated.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&#34;references&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;3. References&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Columbia River DART, Columbia Basin Research, University of Washington. (2019). Adult Passage Graphics &amp;amp; Text. Available from &lt;a href=&#34;http://www.cbr.washington.edu/dart/query/adult_graph_text&#34; class=&#34;uri&#34;&gt;http://www.cbr.washington.edu/dart/query/adult_graph_text&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Desiree Ramirez. (2019, November 19). Bonneville Dam. The Official Guide to Portland. &lt;a href=&#34;https://www.travelportland.com/region/bonneville-dam/&#34; class=&#34;uri&#34;&gt;https://www.travelportland.com/region/bonneville-dam/&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Oregon Department of Fish &amp;amp; Wildlife. (2019). Bonneville Hatchery Visitors’ Guide | Oregon Department of Fish &amp;amp; Wildlife. &lt;a href=&#34;https://myodfw.com/bonneville-hatchery-visitors-guide&#34; class=&#34;uri&#34;&gt;https://myodfw.com/bonneville-hatchery-visitors-guide&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Northwest Power and Conservation Council. (2015). Dams: Impacts on salmon and steelhead. &lt;a href=&#34;https://www.nwcouncil.org/reports/columbia-river-history/damsimpacts&#34; class=&#34;uri&#34;&gt;https://www.nwcouncil.org/reports/columbia-river-history/damsimpacts&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

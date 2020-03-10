@@ -1,0 +1,287 @@
+---
+title: 'Two Samples Unpaired T-test'
+lastmod: '2019-11-06T15:05:12-08:00'
+author: 'Ruoyu Wang'
+output: html_document
+tags:
+  - R
+  - Statictis
+  - Academic
+subtitle: 'California Spiny Lobster Abundance and size among different locations during years'
+summary: 'Using data collected by Santa Barbara Coastal Long-Term Ecological Research program to compare the population, size of lobsters in MPAs and non-MPAs from 2012 to 2018.'
+featured: no
+image:
+  caption: 'Bonneville Dam Spillway photo by Kirt Edblom on [flickr](https://www.flickr.com/photos/kirt_edblom/14150670993/in/photostream/)'
+---
+
+
+```{r setup, include=FALSE, message = FALSE, warnings = FALSE, fig.align='center'}
+knitr::opts_chunk$set(echo = TRUE, include = TRUE, message = FALSE, warnings = FALSE, fig.align = "center")
+```
+
+```{r PackTidy}
+# Attach packages
+library(tidyverse)
+library(janitor)
+library(effsize)
+library(kableExtra)
+
+# Tidy up the data:
+# 1. Tell R all the -99999 values are actually NAs. Then clean all the column names into snake_case.
+lob_rdata <- readr::read_csv("lobster_abundance_sbc_lter.csv",
+                             na = "-99999") %>%
+  clean_names()
+
+# 2. Make the raw data into tidy format by uncounting the observations to separeted rows.
+lob_tidy <- lob_rdata %>% 
+  tidyr::uncount(count)
+```
+
+### Introduction
+
+To limit the impact of human activities on coral reef, Marine Protected Areas (MPA) were set up (Mora, et al. 2006). In this report, two areas are located in or near the California Fish and Game Network of Marine Protected Areas: Naples (NAPL) and Isla Vista (IVEE), where they both established as MPAs on 2012; three outside: Arroyo Quemado (AQUE), Mohawk (MOHK) and Carpinteria (CARP). The protections on reef also benefit to kelp forests (Claisse, et al. 2013). With little human interfere, MPAs help to research the effects of fishing on kelp forest community dynamics.
+Spiny lobsters are part of the necessary food chains in kelp forests off southern California (Reed D. 2019). After six years of reservation, there was a 5–10% increase in the mean size of lobsters at some MPAs (Kay, et al. 2012). 
+Here, we use data collected by Santa Barbara Coastal Long-Term Ecological Research program to compare the population, size of lobsters in MPAs and non-MPAs from 2012 to 2018.
+	
+### Data and Methods 
+
+
+Data for California Spiny Lobster abundance and location from 2012 - 2018 were collected and provided by [Santa Barbara Coastal Long-Term Ecological Research](https://sbclter.msi.ucsb.edu/) program (SBC LTER). Samples are collected during the lobster fishing season (October to March) along the mainland coast of the Santa Barbara Channel. For more information on collection methods and spatial information, see [metadata](https://portal.edirepository.org/nis/mapbrowse?scope=knb-lter-sbc&identifier=77&revision=newest). Lobster size distributions are faceted by site and year. Mean lobster size (mm) was compared for MPA and non-MPA areas in the same year, year 2012 and 2018 within each group by two-sample unpaired t-tests (α
+ = 0.05). All data analyses and figures are accomplished in R studio version 3.6.1.
+
+
+
+### Results
+
+#### 1. Annual lobster abundance by site
+
+
+From 2012 to 2018, the total amount of lobster has changed in different trends in five different areas (Figure.1).
+
+
+```{r AnnualChange}
+# Count the lobster amount by site and year.
+lob_year <- lob_tidy %>% 
+  count(year, site)
+
+# Made a colorblind-friendly palette.
+cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#0072B2", "#CC79A7")
+
+# Show the annual changes in line graph, which is grouped by site. Instead of legend, using labels to indicate different sites.
+ggplot(data = lob_year, aes(x = year, y = n)) +
+  geom_line(aes(color = site), 
+            size = 1, 
+            show.legend = FALSE) +
+  geom_point(aes(color = site, shape = site), 
+             size = 2.5, 
+             show.legend = FALSE) +
+  scale_shape_manual(values = c(15, 16,17, 18, 25)) + #change the point shape manually
+  annotate("text", 
+           x = 2018.5:2018.5:2018.5:2018.5:2018.5, 
+           y = c(54, 343, 946, 164, 298), 
+           label = c("AQUE", "CARP", "IVEE", "MOHK", "NAPL"),
+           color = cbPalette)+
+  labs(x = "Year", y = "Lobster population")+
+  scale_color_manual(values = cbPalette) +
+  theme_minimal()
+```
+***Figure. 1*** *Lobster population changes from 2012 to 2018 in four different sites. IVEE means Isla Vista area, CARP = Carpinteria, NAPL = Naples, MOHK = Mohawk, AQUE = Arroyo Quemado, correspondingly. IVEE and NAPL belongs to MPA group, other three places are in non-MPA group. Data: SBC LTER.*
+
+In Arroyo Quemado area, the population of lobster has barely not changed during the years. While in Isla Vista area, the total amount of lobster has increased significantly especially in year 2016-2018, in contrast to other areas. Lobster amount in Naples generally in the trend of rising. Carpinteria's lobster population experienced a period of increasing but dropped down in 2018. 
+
+#### 2. Lobster size distribution by time and site
+
+After the Marine Protected Areas set up in 2012, the lobster size distribution observed in 5 different areas has changed until 2018 (Figure.2).
+
+```{r 2year5siteHisto}
+# To compare the data only in year 2012 and 2018, use filter() and select() to simplified the new dataframe.
+lob_compare_site <- lob_tidy %>% 
+  filter(year %in% c(2012, 2018)) %>% 
+  select(year, site, size_mm)
+
+# Creat facets labels in advance.
+site_labs <- c("Arroyo Quemado", "Carpinteria", "Isla Vista", "Mohawk", "Naples")
+names(site_labs) <- c("AQUE","CARP","IVEE","MOHK", "NAPL")
+
+# Create 10 histograms to show the distribution of lobster sizes and organize facets by site and time.
+ggplot(data = lob_compare_site, aes(x = size_mm)) +
+  geom_histogram(aes(fill = site), show.legend = FALSE) +
+  labs(x = "Spiny lobster size (mm)", y = "Number of lobster in each size group")+
+  facet_grid(year~site, scales = "free",
+             labeller = labeller(site = site_labs))+
+  scale_fill_manual(values = cbPalette) +
+  theme_minimal() 
+```
+
+***Figure. 2*** *Distribution of lobster size (mm) in 2012 and 2018 in five different sites. The height of bars in the figure shows the number of lobster in the size scale. The higher the bar is, the more number of lobster sizes are in that scale. The total bar area represent the total population of lobster. Data: SBC LTER.*
+
+Through vertical comparison, we can notice that in Isla Vista and Naples, the total amount of lobster has increased from 2012 to 2018; while the other three sites showed decrease in population. These site groups with different trends coincided with MPA and non-MPA group, meaning that Marine Protected Areas might have positive correlation to the population of lobster in that area.
+
+Comparing horizontally, in year 2012, Carpinteria and Mohawk had relatively high population of lobster; while in year 2018, Isla Vista had the hugest amount of lobster.
+
+Most lobster size concentrated in 60 - 100 mm. Mohawk used to have more bigger-size lobsters than other areas (80-120 mm). However, in 2018, little amount of big-size lobsters appeared in Mohawk. On the contrary, Isla Vista and Naples gradually have more big lobster in 2018.
+
+
+#### 3. Mean lobster sizes at MPA versus non-MPA sites in 2012 and 2018.
+
+To explore the possible influence of MPA policy to the lobsters size, we divided the five areas into two groups: MPA and non-MPA group, at two time point: year 2012 and 2018. We will use two-tailed, unpaired t-test to exam: is there a significant difference in lobster size mean between MPA and non-MPA groups; is there a significant difference at year 2012 and 2018 within each group.
+
+Table.1 showed the summary table for lobsters in two time points and two groups. From 2012 to 2018, mean size in MPA group increased, but decreased in non-MPA group. In 2012, lobsters in MPA areas were smaller in mean than those in non-MPA group. But in 2018, MPA lobsters' size mean exceeds non-MPA mean.
+
+
+```{r tsummary}
+# Get the corresponding category for different sites
+lob_tdata <- lob_compare_site %>% 
+  mutate(category = ifelse(site %in% c("NAPL", "IVEE"), "MPA", "non-MPA")) %>% 
+  mutate(year = as.character(year)) # For the t-test later, let R know "year" is "factors" here not just "numbers".
+
+# Calculate the mean, median, standaed deviation and sample sizes for lobsters from the MPA group and non-MPA group.
+lob_tsummary <- lob_tdata %>%
+  group_by(category, year) %>%
+  summarize(
+    mean = mean(size_mm, na.rm = TRUE),
+    median = median(size_mm, na.rm = TRUE),
+    sd = sd(size_mm, na.rm = TRUE),
+    n = n()
+  )
+```
+
+***Table. 1*** *Summary table of descriptive statistics for lobster size (mm) in year 2012 and 2018 separately in MPA and non-MPA site groups. Data: SBC LTER.* 
+
+<div align="center">
+```{r summarytable}
+# Make the summary table for descriptive statistics:
+lob_tsummary %>% 
+  kable(col.names = c("Category", "Year", "Mean", "Median", "Standard Deviation", "Sample Size"),
+        align = "cccccc",
+        digits = 2
+        ) %>% 
+  kable_styling(bootstrap_options = "striped", 
+                full_width = F,
+                position = "center",
+                row_label_position = c
+                )%>% 
+  add_header_above(c("Lobster Size Summary Table" = 6))
+```
+</div>
+
+
+```{r 2012td}
+# Filter data only in year 2012.
+lob_2012 <- lob_tdata %>% 
+  filter(year == 2012)
+
+# Made two sided unpaired t-test for MPA and non-MPA sites and calculate conhen's d.
+y2012_ttest <- t.test(data = lob_2012, size_mm~category)
+y2012_d <- effsize::cohen.d(data = lob_2012, size_mm~category, na.rm = TRUE)
+```
+
+1. In year 2012, mean size of lobsters (mm) measured in MPA sites' samples (`r round(lob_tsummary$mean[1], 2)` $\pm$ `r round(lob_tsummary$sd[1], 2)`, n = `r lob_tsummary$n[1]`) differed significantly from lobster size in non-MPA areas (`r round(lob_tsummary$mean[3], 2)` $\pm$ `r round(lob_tsummary$sd[3], 2)`, n = `r lob_tsummary$n[3]`) by a unpaired two-sample t-test (t(`r round(y2012_ttest$parameter, 2)`) = `r round(y2012_ttest$statistic, 2)`, *p*(`r round(y2012_ttest$p.value, 3)`) < 0.05). The difference in mean size between the two groups is 10.54 mm, with a medium effect size (Cohen's d = `r round(y2012_d$estimate, 2)`). Therefore, we consider the MPA lobster sizes were significantly different than non-MPA ones. Density presented in Figure.3(a).
+
+
+
+```{r 2018td}
+# Filter data only in year 2018.
+lob_2018 <- lob_tdata %>% 
+  filter(year == 2018)
+
+# Made two sided unpaired t-test for MPA and non-MPA sites and calculate conhen's d.
+y2018_ttest <- t.test(data = lob_2018, size_mm~category)
+y2018_d <- effsize::cohen.d(size_mm~category,data = lob_2018,na.rm = TRUE)
+```
+
+2. In year 2018, mean size of lobster (mm) measured in MPA sites' samples (`r round(lob_tsummary$mean[2], 2)` $\pm$ `r round(lob_tsummary$sd[2], 2)`, n = `r lob_tsummary$n[2]`) differed significantly from lobster size in non MPA sites (`r round(lob_tsummary$mean[4], 2)` $\pm$ `r round(lob_tsummary$sd[4], 2)`, n = `r lob_tsummary$n[4]`) by a unpaired two-sample t-test (t(`r round(y2018_ttest$parameter, 2)`) = `r round(y2018_ttest$statistic, 2)`, *p*< 0.001). The difference in mean size between the two groups is 3.95 mm, with a small effect size (Cohen's d = `r round(y2018_d$estimate, 2)`). Though the two groups show difference in data, it is highly possible that the difference was due to accidental error. Therefore, more researches need to be done to make sure the two groups are actually different significantly. Presented in Figure.3(a).
+
+
+```{r facet28}
+# Create Kernel density plots to compare lobster size in MPA group and non-MPA group separetly in year 2012 and 2018.
+
+ggplot(data = lob_tdata, aes(x = size_mm, color = category, fill = category)) +
+  geom_density(alpha = .3,show.legend = FALSE)+
+  facet_wrap(~year)+
+  geom_vline(data = lob_tsummary, aes(xintercept = mean,
+                                 colour = category),
+             linetype = "dashed",
+             size = 1,
+             show.legend = FALSE) +
+  scale_fill_manual(values = c("#56B4E9", "#CC79A7"))+
+  scale_color_manual(values = c("#56B4E9", "#CC79A7"))+
+  scale_y_discrete(expand = c(0,0)) +
+  labs(x = "Lobster size (mm)", y = "Kernel density")+
+  annotate("text", x = 60, y = .045, label = "MPA", color = "#56B4E9") +
+  annotate("text", x = 95, y = .045, label = "non-MPA", color = "#CC79A7") +
+  theme_minimal()
+```
+
+***Figure. 3(a)*** *Lobster distribution in MPA and non-MPA groups at year 2012 and 2018. The blue color represents MPAs, purple represents non-MPAs. Data: SBC LTER.* 
+
+
+
+```{r mpatd}
+lob_mpa <- lob_tdata %>% 
+  filter(category == "MPA") 
+
+mpa_ttest <- t.test(data = lob_mpa, size_mm~year)
+mpa_d <- effsize::cohen.d(size_mm~year, data = lob_mpa, na.rm = TRUE)
+```
+
+3. For MPA samples, mean size of lobster (mm) measured in year 2012 (`r round(lob_tsummary$mean[1], 2)` $\pm$ `r round(lob_tsummary$sd[1], 2)`, n = `r lob_tsummary$n[1]`) differed significantly from lobster size in year 2018 (`r round(lob_tsummary$mean[2], 2)` $\pm$ `r round(lob_tsummary$sd[2], 2)`, n = `r lob_tsummary$n[2]`) by a unpaired two-sample t-test (t(`r round(mpa_ttest$parameter, 2)`) = `r round(mpa_ttest$statistic, 2)`, *p*< 0.001). The difference in mean size between the two groups is 10.19 mm, with a large effect size (Cohen's d = `r round(mpa_d$estimate, 2)`). Therefore, the lobster sizes increased significantly from 2012 to 2018. See Figure.3(b).
+
+
+
+```{r nonmpatd}
+lob_nonmpa <- lob_tdata %>% 
+  filter(category == "non-MPA") 
+
+nonmpa_ttest <- t.test(data = lob_nonmpa, size_mm~year)
+nonmpa_d <- effsize::cohen.d(size_mm~year, data = lob_nonmpa)
+```
+
+4. For non-MPA samples, mean size of lobster (mm) measured in year 2012 (`r round(lob_tsummary$mean[3], 2)` $\pm$ `r round(lob_tsummary$sd[3], 2)`, n = `r lob_tsummary$n[3]`) is not different significantly from lobster size in year 2018 (`r round(lob_tsummary$mean[4], 2)` $\pm$ `r round(lob_tsummary$sd[4], 2)`, n = `r lob_tsummary$n[4]`) by a unpaired two-sample t-test (t(`r round(nonmpa_ttest$parameter, 2)`) = `r round(nonmpa_ttest$statistic, 2)`, *p* = `r round(nonmpa_ttest$p.value, 2)`). The difference in mean size between the two groups is 1.30 mm, with a negligible effect size (Cohen's d = `r round(nonmpa_d$estimate, 2)`). Therefore, the lobster sizes in non-MPA areas have no significant change between 2012 and 2018. See Figure.3(b).
+
+
+```{r facetmpa}
+# Create Kernel density plots to compare lobster size in year 2012 and 2018 within the groups of MPA and non-MPA.
+
+ggplot(data = lob_tdata, aes(x = size_mm, fill = year, color = year)) +
+  geom_density(alpha = .3,show.legend = FALSE)+
+  facet_wrap(~category)+
+  geom_vline(data = lob_tsummary, aes(xintercept = mean,
+                                 colour = year),
+             linetype = "dashed",
+             size = 1,
+             show.legend = FALSE) +
+  scale_y_discrete(expand = c(0,0)) +
+  scale_fill_manual(values = c("#E69F00", "#009E73")) +
+  scale_color_manual(values = c("#E69F00", "#009E73")) +
+  labs(x = "Lobster size (mm)", y = "Kernel density")+
+  annotate("text", x = 88, y = .045, label = "2018", color = "#009E73") +
+  annotate("text", x = 55, y = .045, label = "2012", color = "#E69F00") +
+  theme_minimal()
+```
+***Figure. 3(b)*** *Lobster distribution within MPA and non-MPA groups at year 2012 and 2018. The orange color represents year 2012, green represents 2018. Data: SBC LTER.* 
+
+
+
+### Summary
+
+- From 2012 to 2018, lobster populations in MPA areas increased in general  (Figure.1).
+
+- From 2012 to 2018, more large-size lobsters appears in MPA areas while non-MPA declines in amount of big size ones (Figure.2).
+
+- In year 2012, MPA and non-MPA group had significant difference in size with a medium effect size; in year 2018, the significant difference may not be accurate because of the small effect size (Figure.3(a)).
+
+- Within the MPA groups, the lobster sizes increased significantly from 2012 to 2018; in non-MPA groups, no significant difference showed between 2012 and 2018 (Figure.3(b)).
+
+
+
+
+### References
+
+Claisse, Jeremy T., et al. "Kelp forest habitat restoration has the potential to increase sea urchin gonad biomass." Ecosphere 4.3 (2013): 1-19.
+
+Kay, Matthew C., et al. "Collaborative assessment of California spiny lobster population and fishery responses to a marine reserve network." Ecological applications 22.1 (2012): 322-335.
+
+Mora, Camilo, et al. "Coral reefs and the global network of marine protected areas." (2006): 1750-1751.
+
+Daniel, Reed C. 2019. "SBC LTER: Reef: Abundance, size and fishing effort for California Spiny Lobster (Panulirus interruptus) , ongoing since 2012." Environmental Data Initiative. https://doi.org/10.6073/pasta/a593a675d644fdefb736750b291579a0. Dataset accessed 10/30/2019.

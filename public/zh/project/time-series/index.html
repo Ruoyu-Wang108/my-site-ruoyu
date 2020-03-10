@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Source Themes Academic 4.7.0">
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  <meta name="author" content="Ruoyu Wang">
+
+  
+  
+  
+    
+  
+  <meta name="description" content="In this report, we will analysis and visualize time series data for adult steelhead salmon passage across the Bonneville Dam from 1939 - 2019.">
+
+  
+  <link rel="alternate" hreflang="en" href="/project/time-series/">
+  
+  <link rel="alternate" hreflang="zh" href="/zh/project/time-series/">
+
+  
+
+
+  
+  
+  
+  <meta name="theme-color" content="hsl(339, 90%, 68%)">
+  
+
+  
+  
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.8.6/css/academicons.min.css" integrity="sha256-uFVgMKfistnJAfoCUQigIl+JfUaP47GrRKjf6CTPVmw=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css" integrity="sha256-+N4/V/SbAFiW1MPBCXnfnP9QSN3+Keu+NlB+0ev/YKQ=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" integrity="sha256-Vzbj7sDDS/woiFS3uNKo8eIuni59rjyNGtXfstRzStA=" crossorigin="anonymous">
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/github.min.css" crossorigin="anonymous" title="hl-light" disabled>
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark">
+        
+      
+    
+
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.5.1/leaflet.css" integrity="sha256-SHMGCYmST46SoyGgo4YR/9AlK1vf3ff84Aq9yK4hdqM=" crossorigin="anonymous">
+    
+
+    
+
+    
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/lazysizes/5.1.2/lazysizes.min.js" integrity="sha256-Md1qLToewPeKjfAHU1zyPwOutccPAm5tahnaw7Osw0A=" crossorigin="anonymous" async></script>
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+      
+
+      
+      
+        
+      
+
+      
+    
+      
+
+      
+      
+
+      
+    
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Cutive+Mono%7CLora:400,700%7CRoboto:400,700&display=swap">
+  
+
+  
+  
+  
+  
+  <link rel="stylesheet" href="/css/academic.css">
+
+  
+
+
+
+
+  
+
+
+  
+
+  <link rel="manifest" href="/zh/index.webmanifest">
+  <link rel="icon" type="image/png" href="/images/icon_hu0b7a4cb9992c9ac0e91bd28ffd38dd00_9727_32x32_fill_lanczos_center_2.png">
+  <link rel="apple-touch-icon" type="image/png" href="/images/icon_hu0b7a4cb9992c9ac0e91bd28ffd38dd00_9727_192x192_fill_lanczos_center_2.png">
+
+  <link rel="canonical" href="/zh/project/time-series/">
+
+  
+  
+  
+  
+  
+    
+  
+  
+  <meta property="twitter:card" content="summary_large_image">
+  
+  <meta property="og:site_name" content="王若宇">
+  <meta property="og:url" content="/zh/project/time-series/">
+  <meta property="og:title" content="Time series exploration and visualization | 王若宇">
+  <meta property="og:description" content="In this report, we will analysis and visualize time series data for adult steelhead salmon passage across the Bonneville Dam from 1939 - 2019."><meta property="og:image" content="/zh/project/time-series/featured.jpg">
+  <meta property="twitter:image" content="/zh/project/time-series/featured.jpg"><meta property="og:locale" content="zh">
+  
+    
+      <meta property="article:published_time" content="2020-01-09T00:00:00&#43;00:00">
+    
+    <meta property="article:modified_time" content="2020-02-18T15:05:12-08:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/zh/project/time-series/"
+  },
+  "headline": "Time series exploration and visualization",
+  
+  "image": [
+    "/zh/project/time-series/featured.jpg"
+  ],
+  
+  "datePublished": "2020-01-09T00:00:00Z",
+  "dateModified": "2020-02-18T15:05:12-08:00",
+  
+  "author": {
+    "@type": "Person",
+    "name": "Ruoyu Wang"
+  },
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "王若宇",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "img//"
+    }
+  },
+  "description": "In this report, we will analysis and visualize time series data for adult steelhead salmon passage across the Bonneville Dam from 1939 - 2019."
+}
+</script>
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  <title>Time series exploration and visualization | 王若宇</title>
+
+</head>
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="dark">
+
+  <aside class="search-results" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>搜索</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="搜索..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search">
+        
+      </div>
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+  
+
+
+
+
+
+
+
+<nav class="navbar navbar-expand-lg navbar-light compensate-for-scrollbar" id="navbar-main">
+  <div class="container">
+
+    
+    <div class="d-none d-lg-inline-flex">
+      <a class="navbar-brand" href="/zh">王若宇</a>
+    </div>
+    
+
+    
+    <button type="button" class="navbar-toggler" data-toggle="collapse"
+            data-target="#navbar-content" aria-controls="navbar" aria-expanded="false" aria-label="切换导航">
+    <span><i class="fas fa-bars"></i></span>
+    </button>
+    
+
+    
+    <div class="navbar-brand-mobile-wrapper d-inline-flex d-lg-none">
+      <a class="navbar-brand" href="/zh">王若宇</a>
+    </div>
+    
+
+    
+    
+    <div class="navbar-collapse main-menu-item collapse justify-content-start" id="navbar-content">
+
+      
+      <ul class="navbar-nav d-md-inline-flex">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/zh/#experience"><span>相关经历</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/zh/#projects"><span>项目实习</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/zh/#posts"><span>文章小样</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/zh/files/cv.pdf"><span>个人简历</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/zh/#contact"><span>联系我</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+      </ul>
+    </div>
+
+    <ul class="nav-icons navbar-nav flex-row ml-auto d-flex pl-md-2">
+      
+      <li class="nav-item">
+        <a class="nav-link js-search" href="#"><i class="fas fa-search" aria-hidden="true"></i></a>
+      </li>
+      
+
+      
+      <li class="nav-item">
+        <a class="nav-link js-dark-toggle" href="#"><i class="fas fa-moon" aria-hidden="true"></i></a>
+      </li>
+      
+
+      
+      <li class="nav-item dropdown i18n-dropdown">
+        <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true">
+          <i class="fas fa-globe mr-1" aria-hidden="true"></i><span class="d-none d-lg-inline">中文 (简体)</span>
+        </a>
+        <div class="dropdown-menu">
+          <div class="dropdown-item i18n-active font-weight-bold">
+            <span>中文 (简体)</span>
+          </div>
+          
+          <a class="dropdown-item" href="/project/time-series/">
+            <span>English</span>
+          </a>
+          
+        </div>
+      </li>
+      
+
+    </ul>
+
+  </div>
+</nav>
+
+
+  <article class="article article-project">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+
+<div class="article-container pt-3">
+  <h1>Time series exploration and visualization</h1>
+
+  
+  <p class="page-subtitle">Adult steelhead salmon passage across the Bonneville Dam in 1939-2019</p>
+  
+
+  
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+          最近更新于
+      
+    
+    Feb 18, 2020
+  </span>
+  
+
+  
+
+  
+
+  
+  
+  
+
+  
+  
+
+</div>
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+
+
+<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 720px; max-height: 420px;">
+  <div style="position: relative">
+    <img src="/zh/project/time-series/featured_huc14cd9b2fc590a417b324511d628bcf3_11687526_720x0_resize_q90_lanczos.jpg" alt="" class="featured-image">
+    <span class="article-header-caption">Bonneville Dam Spillway photo by Kirt Edblom on <a href="https://www.flickr.com/photos/kirt_edblom/14150670993/in/photostream/">flickr</a></span>
+  </div>
+</div>
+
+
+
+  <div class="article-container">
+
+    <div class="article-style">
+      
+
+
+<div id="introduction" class="section level3">
+<h3>1. Introduction</h3>
+<p>Bonneville Dam, located on the Columbia River, is one of the biggest hydroelectric systems in the world (Desiree Ramirez, 2019). However, the presence of dam would block the reproducing and rearing habitats of many fishes, including salmon and steelhead (Northwest Power and Conservation Council, 2015). To alleviate the negative effects on fish, Hatchery utilities were built in 1909 and renovated in 1957 and 1998 (Oregon Department of Fish &amp; Wildlife, 2019). In this report, we will analysis and visualize time series data for adult steelhead salmon passage across the Bonneville Dam from 1939 - 2019.</p>
+<p><img src="Steelhead.jpg" width="60%" /></p>
+<p><strong><em>Figure. 1</em></strong> <em>Oncorhynchus mykiss (Steelhead) at the Oregon Zoo Picture by User: Cacophony, published on <a href="https://commons.wikimedia.org/wiki/File:Steelhead.jpg">Wikimedia Commons</a>.</em></p>
+</div>
+<div id="data-analysis" class="section level3">
+<h3>2. Data analysis</h3>
+<div id="a.-daily-data-time-series-plot-for-adult-steelhead-passage" class="section level5">
+<h5>a. Daily data time series plot for adult steelhead passage</h5>
+<pre class="r"><code># Combine the year, month and day and transform into date class in a new column
+
+steelhead_date &lt;- steelhead %&gt;% 
+  mutate(date = paste(year, mm_dd, sep = &quot;-&quot;)) %&gt;% 
+  mutate(date_new = lubridate::ydm(date)) %&gt;%
+  drop_na(date_new) 
+# remove NA date, normally unexisted date: for example Feb 29, 2019 didn&#39;t exist, it was transformed to NA</code></pre>
+<pre class="r"><code># Draw a daily passage line plot
+ggplot(data = steelhead_date, aes(x = date_new, y = value))+
+  geom_line(aes(color = year), show.legend = FALSE)+
+  labs(x = &quot;Date&quot;, y = &quot;Adult passage number (fish/day)&quot;)+
+  scale_color_paletteer_c(&quot;grDevices::rainbow&quot;)+
+  theme_minimal()</code></pre>
+<p><img src="/project/time-series/index_files/figure-html/daily_figure-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p><strong><em>Figure. 2</em></strong> <em>Daily adult steelhead passage through Bonneville Dam. Different colors represent different years. Data source: Data from: Columbia Basin Research Available here: <a href="http://www.cbr.washington.edu/dart/query/adult_graph_text">Adult fish passage</a>.</em></p>
+</div>
+<div id="b.-seasonplot-showing-monthly-passage-variation" class="section level5">
+<h5>b. Seasonplot showing monthly passage variation</h5>
+<pre class="r"><code># Put month and year in seprate columns
+steelhead_parsed &lt;- steelhead_date %&gt;% 
+  mutate(month = month(date_new, label = TRUE)) %&gt;% 
+  mutate(date_ym = yearmonth(date_new))
+
+
+# Group and calcuate data for seasonal plot
+steel_season &lt;- steelhead_parsed %&gt;% 
+  group_by(year, month) %&gt;% 
+  summarize(
+    monthly_total = sum(value, na.rm = TRUE)
+  )
+
+
+# Calculate the monthly total for tsibble
+steel_monthly &lt;- steelhead_parsed%&gt;% 
+  group_by(date_ym) %&gt;% 
+  summarize(
+    monthly_total = sum(value, na.rm = TRUE)
+  ) %&gt;% 
+  mutate(location = &quot;Bon&quot;)
+
+# convert the monthly table into tsibble format
+steel_ts &lt;- as_tsibble(steel_monthly, key = &quot;location&quot;, index = &quot;date_ym&quot;)</code></pre>
+<pre class="r"><code># Seasonal plot
+ggplot(data = steel_season, aes(x = month, y = monthly_total, group = year))+
+  geom_line(aes(color = year))+
+  scale_color_paletteer_c(&quot;pals::kovesi.diverging_rainbow_bgymr_45_85_c67&quot;)+
+  labs(x = &quot;&quot;, y = &quot;Monthly adult steelhead passage (fish/month)&quot;, color = &quot;Year&quot;)+
+  theme_minimal()</code></pre>
+<p><img src="/project/time-series/index_files/figure-html/seasonal_plot-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p><strong><em>Figure. 3</em></strong> <em>A seasonplot of adult steelhead passage across Bonneville Dam in different months for each year. The years present in different colors. From the past to the present, the color changes from blue to green, yellow and red. Data source: Data from: Columbia Basin Research Available here: <a href="http://www.cbr.washington.edu/dart/query/adult_graph_text">Adult fish passage</a>.</em></p>
+<p>We can see strong and consistent pattern of the monthly passage amount within one year. The annual peaks often occur in August. Summer to early fall (July to September) is the main migration season for steelhead in this area. Besides, the size of migration seemed to grow recently. Most monthly passage amounts after 2000 (lines in red color) were relatively higher than those before 2000 (lines in colors other than red), especially in peak months.</p>
+</div>
+<div id="c.-annual-steelhead-passage-graph" class="section level5">
+<h5>c. Annual steelhead passage graph</h5>
+<pre class="r"><code># Calculate the annual total/yearly total
+steel_year &lt;- steelhead_date %&gt;% 
+  group_by(year) %&gt;% 
+  summarize(
+    year_total = sum(value, na.rm = TRUE)
+  ) </code></pre>
+<pre class="r"><code># Make a bar graph for annual total
+ggplot(data = steel_year, aes(x = year, y = year_total)) +
+  geom_col(aes(fill = year), 
+           width = 1, 
+           color = &quot;white&quot;,
+           show.legend = FALSE)+
+  scale_fill_paletteer_c(&quot;pals::kovesi.diverging_rainbow_bgymr_45_85_c67&quot;)+
+  labs(x = &quot;Year&quot;, 
+       y = &quot;Annual adult steelhead passage (fish/year)&quot;)+
+  scale_x_continuous(breaks = c(1939, 1950, 1960, 1970, 1980, 1990, 2000, 2010, 2019))+
+  theme_minimal()</code></pre>
+<p><img src="/project/time-series/index_files/figure-html/annual_plot-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p><strong><em>Figure. 4</em></strong> <em>Annual amount plot shows the fluctuation of the migration amounts during 1939-2019. Each column indicates the annual passage amount in the specific year. Data source: Data from: Columbia Basin Research Available here: <a href="http://www.cbr.washington.edu/dart/query/adult_graph_text">Adult fish passage</a>.</em></p>
+<p>According to the Oregon Department of Fish &amp; Wildlife, fish protection facilities renovations were in 1957 and 1998. Because our data only includes adult fish passage, normally there would be a time lag between spawning and increasing whole population. In this annual plot, we could see a huge rise in 2001, which was three years later than the 1998 project. However, no visible improvement happened after the 1957 program.</p>
+</div>
+<div id="d.-explore-decomposition-and-analysis-the-time-series-data" class="section level5">
+<h5>d. Explore, decomposition and analysis the time series data</h5>
+<pre class="r"><code># Decomposite the steelhead data
+dcmp &lt;- steel_ts %&gt;% 
+  model(STL(monthly_total ~ season(window = 3)))
+
+# Plot each components of the steelhead data
+components(dcmp) %&gt;% autoplot() +
+  labs(title = &quot;STL Decomposition&quot;,
+       subtitle = &quot;Monthly passage = trend + season_year-month + remainder&quot;,
+       x = &quot;Date (year-month)&quot;)+
+  theme_minimal()</code></pre>
+<p><img src="/project/time-series/index_files/figure-html/unnamed-chunk-1-1.png" width="864" style="display: block; margin: auto;" /></p>
+<p><strong><em>Figure. 5</em></strong> <em>Decomposition of the time series passage data during 1939-2019. Data source: Data from: Columbia Basin Research Available here: <a href="http://www.cbr.washington.edu/dart/query/adult_graph_text">Adult fish passage</a>.</em></p>
+<p>From the original data, we could see strong seasonality, no clearly overall trend and cyclical trend. Considering the peak months are from July to August, we choose 3 as the window width. The trend in decomposition plot catches the changes in the original graph. The seasonal also contains the yearly peak feature. Additionally, the residuals seem relatively random.</p>
+<pre class="r"><code># Use the autocorrelation function (ACF) to further examine the seasonality
+steel_ts %&gt;% 
+  ACF(monthly_total) %&gt;% 
+  autoplot()+
+  theme_minimal()</code></pre>
+<p><img src="/project/time-series/index_files/figure-html/acf-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><strong><em>Figure. 6</em></strong> <em>The autocorrelation function (ACF) of the time series passage data in 1939-2019. It shows the correlation of a time series data with itself. Data source: Columbia Basin Research Available here: <a href="http://www.cbr.washington.edu/dart/query/adult_graph_text">Adult fish passage</a>.</em></p>
+<p>We can observe strong seasonality in this data. For example, months 3-9 are positively correlated with each other. Positive correlation also happens in month 10-14. While these two group are negatively correlated.</p>
+</div>
+</div>
+<div id="references" class="section level3">
+<h3>3. References</h3>
+<ul>
+<li><p>Columbia River DART, Columbia Basin Research, University of Washington. (2019). Adult Passage Graphics &amp; Text. Available from <a href="http://www.cbr.washington.edu/dart/query/adult_graph_text" class="uri">http://www.cbr.washington.edu/dart/query/adult_graph_text</a></p></li>
+<li><p>Desiree Ramirez. (2019, November 19). Bonneville Dam. The Official Guide to Portland. <a href="https://www.travelportland.com/region/bonneville-dam/" class="uri">https://www.travelportland.com/region/bonneville-dam/</a></p></li>
+<li><p>Oregon Department of Fish &amp; Wildlife. (2019). Bonneville Hatchery Visitors’ Guide | Oregon Department of Fish &amp; Wildlife. <a href="https://myodfw.com/bonneville-hatchery-visitors-guide" class="uri">https://myodfw.com/bonneville-hatchery-visitors-guide</a></p></li>
+<li><p>Northwest Power and Conservation Council. (2015). Dams: Impacts on salmon and steelhead. <a href="https://www.nwcouncil.org/reports/columbia-river-history/damsimpacts" class="uri">https://www.nwcouncil.org/reports/columbia-river-history/damsimpacts</a></p></li>
+</ul>
+</div>
+
+    </div>
+
+    
+
+
+
+
+
+<div class="article-tags">
+  
+  <a class="badge badge-light" href="/zh/tags/time-series/">Time series</a>
+  
+  <a class="badge badge-light" href="/zh/tags/r/">R</a>
+  
+  <a class="badge badge-light" href="/zh/tags/academic/">Academic</a>
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  
+  
+    
+  
+  
+  <div class="media author-card content-widget-hr">
+    
+      
+      <img class="portrait mr-3" src="/zh/authors/admin/avatar_hu7a09a23298d3ea692cf91d3bc062fd0f_554059_250x250_fill_q90_lanczos_center.jpeg" alt="Avatar">
+    
+
+    <div class="media-body">
+      <h5 class="card-title"><a href="/">Ruoyu Wang</a></h5>
+      <h6 class="card-subtitle">Master candidate of Environmental Science and Management</h6>
+      <p class="card-text">Her interests lie in energy and climate change, pollution, prevention and remediation and applications of data science in environmental studies.</p>
+      <ul class="network-icon" aria-hidden="true">
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="/zh/#contact" >
+        <i class="fas fa-envelope"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://www.linkedin.com/in/ruoyu-wang-b8443a196/" target="_blank" rel="noopener">
+        <i class="fab fa-linkedin"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://github.com/Ruoyu-Wang108" target="_blank" rel="noopener">
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  
+</ul>
+
+    </div>
+  </div>
+
+
+
+
+
+
+
+
+
+  
+  
+  <div class="article-widget content-widget-hr">
+    <h3>相关</h3>
+    <ul>
+      
+      <li><a href="/zh/project/my-new-project/">My Great Post!</a></li>
+      
+      <li><a href="/zh/project/ttest/">Two Samples Unpaired T-test</a></li>
+      
+      <li><a href="/zh/project/external-project/">Green Footprint</a></li>
+      
+    </ul>
+  </div>
+  
+
+
+
+    <div class="project-related-pages content-widget-hr">
+      
+      
+
+      
+      
+      
+
+      
+      
+      
+
+      
+      
+      
+    </div>
+  </div>
+</article>
+
+      
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js" integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js" integrity="sha256-1zu+3BnLYV9LdiY85uXMzii3bdrkelyp37e0ZyTAQh0=" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/languages/r.min.js"></script>
+        
+      
+
+    
+
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.5.1/leaflet.js" integrity="sha256-EErZamuLefUnbMBQbsEqu1USa+btR2oIlCpBJbyD4/g=" crossorigin="anonymous"></script>
+    
+
+    
+    
+    <script>const code_highlighting = true;</script>
+    
+
+    
+    
+    
+    
+    
+    
+    <script>
+      const search_config = {"indexURI":"/zh/index.json","minLength":1,"threshold":0.3};
+      const i18n = {"no_results":"没有找到结果","placeholder":"搜索...","results":"搜索结果"};
+      const content_type = {
+        'post': "文章",
+        'project': "项目",
+        'publication' : "出版物",
+        'talk' : "演讲"
+        };
+    </script>
+    
+
+    
+    
+
+    
+    
+    <script id="search-hit-fuse-template" type="text/x-template">
+      <div class="search-hit" id="summary-{{key}}">
+      <div class="search-hit-content">
+        <div class="search-hit-name">
+          <a href="{{relpermalink}}">{{title}}</a>
+          <div class="article-metadata search-hit-type">{{type}}</div>
+          <p class="search-hit-description">{{snippet}}</p>
+        </div>
+      </div>
+      </div>
+    </script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      
+    
+    
+    
+    
+    <script src="/js/academic.min.a0d331bcd05dbe8b31e244f796710f08.js"></script>
+
+    
+
+
+
+
+
+
+  
+  
+  <div class="container">
+    <footer class="site-footer">
+  
+
+  <p class="powered-by">
+    2020 &middot; 
+
+    Powered by the
+    <a href="https://sourcethemes.com/academic/" target="_blank" rel="noopener">Academic theme</a> for
+    <a href="https://gohugo.io" target="_blank" rel="noopener">Hugo</a>.
+
+    
+    <span class="float-right" aria-hidden="true">
+      <a href="#" class="back-to-top">
+        <span class="button_icon">
+          <i class="fas fa-chevron-up fa-2x"></i>
+        </span>
+      </a>
+    </span>
+    
+  </p>
+</footer>
+
+  </div>
+  
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">引用</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> 复制
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> 下载
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
