@@ -4,23 +4,23 @@ authors:
 bio: Her interests lie in energy and climate change, pollution, prevention and remediation and applications of data science in environmental studies.
 education:
   courses:
-  - course: Master of Environmental Science and Management
-    institution: University of California, Santa Barbara
-    year: Expected June 2021
-  - course: Bachelor of Engineering in Environmental Science
-    institution: Northwest Agriculture and Forestry University (China)
+  - course: 环境科学与管理硕士
+    institution: 加州大学圣芭芭拉分校
+    year: 预计2021年六月完成学业
+  - course: 环境科学工学学士
+    institution: 西北农林科技大学（杨凌）
     year: 2019
 email: "r_wang@ucsb.edu"
 interests:
-- Spatial Analysis
-- Machine Learning
-- Carbon Accounting
-- Pollution Biochemistry
-name: Ruoyu Wang
+- 机器学习
+- 污染物化学
+- 地理信息系统
+- 新能源与气候变化
+name: 王若宇
 organizations:
-- name: University of California, Santa Barbara
+- name: 加州大学圣芭芭拉分校
   url: ""
-role: Master candidate of Environmental Science and Management
+role: 环境科学与管理硕士研究生
 social:
 - icon: envelope
   icon_pack: fas
@@ -37,6 +37,4 @@ user_groups:
 - Visitors
 ---
 
-Ruoyu Wang is a master candidate majoring in Environmental Science and Management at Bren school in University of California, Santa Barbara. Her specialization is Climate and Energy with Environmental data science focus. Highlighted projects she engaged in, including sampling and monitoring water pollutants, designing and composting food waste, and selenium-riched mushroom cultivation and feasibility analysis. The past experience in research and curriculum laid a solid foundation of experimental and self-study abilities.
-
-王若宇，加州大学圣塔芭芭拉分校环境科学与管理硕士研究生在读。她的研究方向为气候与能源，并以环境数据科学为重点。她参与的实验项目包括水体污染采样与分析，堆肥与垃圾转运管理，富硒食用菌的培养与前景预测。过去的经验及课程为她打下了良好的实验基础和极强的自学分析能力。
+王若宇，加州大学圣芭芭拉分校环境科学与管理硕士研究生在读。她的研究方向为气候与能源，并以环境数据科学为重点。她参与的实验项目包括水体污染采样与分析，堆肥与垃圾转运管理，富硒食用菌的培养与前景预测。过去的经验及课程为她打下了良好的实验基础和极强的自学分析能力。
