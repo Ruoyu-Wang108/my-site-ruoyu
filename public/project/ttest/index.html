@@ -28,7 +28,7 @@
   
     
   
-  <meta name="description" content="Using data collected by Santa Barbara Coastal Long-Term Ecological Research program to compare the population, size of lobsters in MPAs and non-MPAs from 2012 to 2018.">
+  <meta name="description" content="Comparing the population, size of lobsters in MPAs and non-MPAs from 2012 to 2018.">
 
   
   <link rel="alternate" hreflang="zh" href="/zh/project/ttest/">
@@ -231,8 +231,8 @@
   
   <meta property="og:site_name" content="Ruoyu Wang">
   <meta property="og:url" content="/project/ttest/">
-  <meta property="og:title" content="Two Samples Unpaired T-test | Ruoyu Wang">
-  <meta property="og:description" content="Using data collected by Santa Barbara Coastal Long-Term Ecological Research program to compare the population, size of lobsters in MPAs and non-MPAs from 2012 to 2018."><meta property="og:image" content="/project/ttest/featured.jpg">
+  <meta property="og:title" content="Unpaired T-test with California Spiny Lobster | Ruoyu Wang">
+  <meta property="og:description" content="Comparing the population, size of lobsters in MPAs and non-MPAs from 2012 to 2018."><meta property="og:image" content="/project/ttest/featured.jpg">
   <meta property="twitter:image" content="/project/ttest/featured.jpg"><meta property="og:locale" content="en-us">
   
     
@@ -264,7 +264,7 @@
     "@type": "WebPage",
     "@id": "/project/ttest/"
   },
-  "headline": "Two Samples Unpaired T-test",
+  "headline": "Unpaired T-test with California Spiny Lobster",
   
   "image": [
     "/project/ttest/featured.jpg"
@@ -286,7 +286,7 @@
       "url": "img//"
     }
   },
-  "description": "Using data collected by Santa Barbara Coastal Long-Term Ecological Research program to compare the population, size of lobsters in MPAs and non-MPAs from 2012 to 2018."
+  "description": "Comparing the population, size of lobsters in MPAs and non-MPAs from 2012 to 2018."
 }
 </script>
 
@@ -304,7 +304,7 @@
 
 
 
-  <title>Two Samples Unpaired T-test | Ruoyu Wang</title>
+  <title>Unpaired T-test with California Spiny Lobster | Ruoyu Wang</title>
 
 </head>
 
@@ -591,7 +591,7 @@
 
 
 <div class="article-container pt-3">
-  <h1>Two Samples Unpaired T-test</h1>
+  <h1>Unpaired T-test with California Spiny Lobster</h1>
 
   
   <p class="page-subtitle">California Spiny Lobster Abundance and size among different locations during years</p>
@@ -649,7 +649,7 @@
 <div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 720px; max-height: 480px;">
   <div style="position: relative">
     <img src="/project/ttest/featured_hu5b8a15a2ca7395cf70cd2cf1b7214ee9_255217_720x0_resize_q90_lanczos.jpg" alt="" class="featured-image">
-    <span class="article-header-caption">Bonneville Dam Spillway photo by Kirt Edblom on <a href="https://www.flickr.com/photos/kirt_edblom/14150670993/in/photostream/">flickr</a></span>
+    <span class="article-header-caption">California spiny lobster from <a href="https://commons.wikimedia.org/wiki/File:Lobster_300.jpg">Wikimedia Commons</a></span>
   </div>
 </div>
 
@@ -717,7 +717,7 @@ ggplot(data = lob_year, aes(x = year, y = n)) +
   labs(x = &quot;Year&quot;, y = &quot;Lobster population&quot;)+
   scale_color_manual(values = cbPalette) +
   theme_minimal()</code></pre>
-<p><img src="/project/ttest/index_files/figure-html/AnnualChange-1.png" width="672" style="display: block; margin: auto;" />
+<p><img src="/en/project/ttest/index_files/figure-html/AnnualChange-1.png" width="672" style="display: block; margin: auto;" />
 <strong><em>Figure. 1</em></strong> <em>Lobster population changes from 2012 to 2018 in four different sites. IVEE means Isla Vista area, CARP = Carpinteria, NAPL = Naples, MOHK = Mohawk, AQUE = Arroyo Quemado, correspondingly. IVEE and NAPL belongs to MPA group, other three places are in non-MPA group. Data: SBC LTER.</em></p>
 <p>In Arroyo Quemado area, the population of lobster has barely not changed during the years. While in Isla Vista area, the total amount of lobster has increased significantly especially in year 2016-2018, in contrast to other areas. Lobster amount in Naples generally in the trend of rising. Carpinteria’s lobster population experienced a period of increasing but dropped down in 2018.</p>
 </div>
@@ -741,7 +741,7 @@ ggplot(data = lob_compare_site, aes(x = size_mm)) +
              labeller = labeller(site = site_labs))+
   scale_fill_manual(values = cbPalette) +
   theme_minimal() </code></pre>
-<p><img src="/project/ttest/index_files/figure-html/2year5siteHisto-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="/en/project/ttest/index_files/figure-html/2year5siteHisto-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p><strong><em>Figure. 2</em></strong> <em>Distribution of lobster size (mm) in 2012 and 2018 in five different sites. The height of bars in the figure shows the number of lobster in the size scale. The higher the bar is, the more number of lobster sizes are in that scale. The total bar area represent the total population of lobster. Data: SBC LTER.</em></p>
 <p>Through vertical comparison, we can notice that in Isla Vista and Naples, the total amount of lobster has increased from 2012 to 2018; while the other three sites showed decrease in population. These site groups with different trends coincided with MPA and non-MPA group, meaning that Marine Protected Areas might have positive correlation to the population of lobster in that area.</p>
 <p>Comparing horizontally, in year 2012, Carpinteria and Mohawk had relatively high population of lobster; while in year 2018, Isla Vista had the hugest amount of lobster.</p>
@@ -931,7 +931,7 @@ ggplot(data = lob_tdata, aes(x = size_mm, color = category, fill = category)) +
   annotate(&quot;text&quot;, x = 60, y = .045, label = &quot;MPA&quot;, color = &quot;#56B4E9&quot;) +
   annotate(&quot;text&quot;, x = 95, y = .045, label = &quot;non-MPA&quot;, color = &quot;#CC79A7&quot;) +
   theme_minimal()</code></pre>
-<p><img src="/project/ttest/index_files/figure-html/facet28-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="/en/project/ttest/index_files/figure-html/facet28-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p><strong><em>Figure. 3(a)</em></strong> <em>Lobster distribution in MPA and non-MPA groups at year 2012 and 2018. The blue color represents MPAs, purple represents non-MPAs. Data: SBC LTER.</em></p>
 <pre class="r"><code>lob_mpa &lt;- lob_tdata %&gt;% 
   filter(category == &quot;MPA&quot;) 
@@ -966,7 +966,7 @@ ggplot(data = lob_tdata, aes(x = size_mm, fill = year, color = year)) +
   annotate(&quot;text&quot;, x = 88, y = .045, label = &quot;2018&quot;, color = &quot;#009E73&quot;) +
   annotate(&quot;text&quot;, x = 55, y = .045, label = &quot;2012&quot;, color = &quot;#E69F00&quot;) +
   theme_minimal()</code></pre>
-<p><img src="/project/ttest/index_files/figure-html/facetmpa-1.png" width="672" style="display: block; margin: auto;" />
+<p><img src="/en/project/ttest/index_files/figure-html/facetmpa-1.png" width="672" style="display: block; margin: auto;" />
 <strong><em>Figure. 3(b)</em></strong> <em>Lobster distribution within MPA and non-MPA groups at year 2012 and 2018. The orange color represents year 2012, green represents 2018. Data: SBC LTER.</em></p>
 </div>
 </div>
@@ -1115,11 +1115,13 @@ ggplot(data = lob_tdata, aes(x = size_mm, fill = year, color = year)) +
       
       <li><a href="/project/time-series/">Time series exploration with steelhead salmon</a></li>
       
-      <li><a href="/project/kai/">Statistics Anlysis with Pacific giant salamanders</a></li>
+      <li><a href="/project/sb-chemistry/">Analysis Santa Barbara water chemistry with four ways</a></li>
+      
+      <li><a href="/project/chi/">Statistics Anlysis with Pacific giant salamanders</a></li>
       
       <li><a href="/project/green-footprint/">Green Footprint</a></li>
       
-      <li><a href="/project/text-mining/">Text Mining with Slient Spring</a></li>
+      <li><a href="/project/text-mining/">Text Mining with Silent Spring</a></li>
       
     </ul>
   </div>

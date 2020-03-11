@@ -1,0 +1,996 @@
+---
+title: "Analysis Santa Barbara water chemistry with four ways"
+author: 'Ruoyu Wang'
+categories: []
+tags:
+  - R
+  - Academic
+subtitle: ''
+summary: 'Adpoting multiple linear regression, correlation matrices, principal components analysis and hierarchical clustering to describe the relationships among variables and groups.'
+authors: []
+lastmod: '2020-03-09T15:05:12-08:00'
+featured: no
+image:
+  caption: '[Buildings coastline pacific ocean Santa Barbara, California](https://cheshirecat.com/vacation-guide/buildings-coastline-pacific-ocean-santa-barbara-california/)'
+  focal_point: ''
+  preview_only: no 
+projects: []
+---
+
+
+
+<div id="introduction" class="section level3">
+<h3>1. Introduction</h3>
+<p>In this report, we will explore the stream chemistry in Santa Barbara water shed with four different approaches. The data set includes dissolved nitrogen (nitrate, ammonium, total dissolved nitrogen); soluble reactive phosphorus (SRP); particulate organic carbon, nitrogen and phosphorus; total suspended sediments; and conductivity. Stream water samples are collected weekly during non-storm flows in winter, and bi-weekly during summer. During winter storms, samples are collected hourly (rising limb) or at 2-4 hour intervals (falling limb).</p>
+</div>
+<div id="multiple-methods-to-analysis-data" class="section level3">
+<h3>2. Multiple methods to analysis data</h3>
+<pre class="r"><code># Attach necessary packages
+library(tidyverse)
+library(janitor)
+library(naniar) # for gg_miss_var, find the NA distribution
+library(stargazer) # regression table
+library(corrplot) # correlations plot
+library(gt) # make nice table
+library(plotly) # 3d plot_ly
+library(ggfortify) # autoplot for biplot
+library(factoextra) # PC contribution
+
+# Packages for cluster analysis:
+library(NbClust)
+library(cluster)
+library(factoextra)
+library(dendextend)
+library(ggdendro)</code></pre>
+<pre class="r"><code># Read in raw data, we can see the &quot;-999&quot; and &quot;-999.0&quot; should be the missing data
+chemistry &lt;- read_csv(&quot;sbc_lter_registered_stream_chemistry.csv&quot;,
+                      na = c(&quot;-999&quot;, &quot;-999.0&quot;))
+
+# Only keep the numeric columns
+chem_num &lt;- chemistry %&gt;% 
+  select(-site_code, -timestamp_local)
+
+chem_full_nona &lt;- chemistry %&gt;% 
+  #select(-timestamp_local) %&gt;% 
+  select(-tpp_uM, -tpn_uM, -tpc_uM, -tss_mgperLiter) %&gt;% 
+  drop_na()
+  
+# Check the NA amount in each column
+gg_miss_var(chem_num)+
+  labs(x = &quot;&quot;, y = &quot;Number of missing variables&quot;)</code></pre>
+<p><img src="/en/project/sb-chemistry/index_files/figure-html/data_pre-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># The tpp, tpn, tpc, and tss contains too many missing values, we will exclude them for the future analysis
+
+# drop all the NAs version
+chem_nona &lt;-  chem_num %&gt;% 
+  select(-tpp_uM, -tpn_uM, -tpc_uM, -tss_mgperLiter) %&gt;% 
+  drop_na()</code></pre>
+<p><strong><em>Figure. 1</em></strong> <em>The lollipop plot for the original data set clearly presents column tpp_uM, tpn_uM, tpc_uM, and tss_uM contains about 15,000 missing values. Data source: Santa Barbara Coastal LTER and J. Melack. 2019..</em></p>
+<div id="multiple-linear-regression" class="section level4">
+<h4>1. Multiple linear regression</h4>
+<pre class="r"><code># Keep all the variables
+chem_lm1 &lt;- lm(spec_cond_uSpercm ~ site_code + no3_uM + nh4_uM + po4_uM + tdn_uM + tdp_uM, data = chem_full_nona)
+
+# delete NO3, NH4 and PO4
+chem_lm2 &lt;- lm(spec_cond_uSpercm ~ site_code + tdn_uM + tdp_uM, data = chem_full_nona)
+
+# Delete total dissolved N and P
+chem_lm3 &lt;- lm(spec_cond_uSpercm ~ site_code + no3_uM + nh4_uM + po4_uM , data = chem_full_nona)
+
+# Delete the sampling locations
+chem_lm4 &lt;- lm(spec_cond_uSpercm ~  no3_uM + nh4_uM + po4_uM + tdn_uM + tdp_uM, data = chem_full_nona)
+
+# summary(chem_lm1)
+# summary(chem_lm2)
+# summary(chem_lm3)
+# summary(chem_lm4)</code></pre>
+<p>AIC evaluates the multiple linear models. Normally, we would like to keep the model with lowest AIC.</p>
+<pre class="r"><code>AIC(chem_lm1)</code></pre>
+<pre><code>## [1] 205956.9</code></pre>
+<pre class="r"><code>AIC(chem_lm2)</code></pre>
+<pre><code>## [1] 206082.6</code></pre>
+<pre class="r"><code>AIC(chem_lm3)</code></pre>
+<pre><code>## [1] 206451.9</code></pre>
+<pre class="r"><code>AIC(chem_lm4)</code></pre>
+<pre><code>## [1] 208786</code></pre>
+<p>The model 1 (with full variables) have the lowest AIC. Combining with reality, we know that though NO3 and NH4 are important part of total dissolved nitrogen, PO4 is the most common type of total dissolved P, there are many other kinds of N,P compounds in TDN and TDP. Therefore, none of the variables are redundant. We believe the model 1 is the most sound model conceptionally.</p>
+<p><strong><em>Table. 1</em></strong> <em>The regression table shows three different models to predict specific conductivity based on different factors. Model (1) considered the sample sites, nitrate, ammonium, phosphate, total dissolved nitrogen and total dissolved phosphorus’s influence on specific conductivity. Model (2) only studied the effect from sites TDN, and TNP, while model (3) only considered the impact from sites and three inorganic N, P chemicals. Data: Santa Barbara Coastal LTER and J. Melack, 2019.</em></p>
+<div align="center">
+<pre class="r"><code># Made a nice regression table with three models created above.
+stargazer(chem_lm1, chem_lm2, chem_lm3, type = &quot;html&quot;, 
+          align = TRUE, dep.var.labels=&quot;Specific conductivity  (uS/cm)&quot;,
+          covariate.labels=c(&quot;Atascadero&quot;,
+                             &quot;Bell Canyon&quot;,
+                             &quot;Devereaux&quot;,
+                             &quot;Gaviota&quot;,
+                             &quot;Arroyo Hondo&quot;,
+                             &quot;Mission at Montecito&quot;,
+                             &quot;Mission at Rocky&quot;,
+                             &quot;San Onofre&quot;,
+                             &quot;Refugio&quot;,
+                             &quot;Rattlesnake&quot;,
+                             &quot;San Pedro&quot;,
+                             &quot;Tecolote&quot;,
+                             &quot;NO3 (uM)&quot;,
+                             &quot;NH4 (uM)&quot;,
+                             &quot;PO4 (uM)&quot;,
+                             &quot;Total dissolved nitrogen (uM)&quot;,
+                             &quot;Total dissolved phosphorus (uM)&quot;),
+          omit.stat=c(&quot;LL&quot;,&quot;ser&quot;,&quot;f&quot;), 
+          no.space=FALSE)</code></pre>
+<table style="text-align:center">
+<tr>
+<td colspan="4" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td colspan="3">
+<em>Dependent variable:</em>
+</td>
+</tr>
+<tr>
+<td>
+</td>
+<td colspan="3" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td colspan="3">
+Specific conductivity (uS/cm)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(1)
+</td>
+<td>
+(2)
+</td>
+<td>
+(3)
+</td>
+</tr>
+<tr>
+<td colspan="4" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Atascadero
+</td>
+<td>
+303.042<sup>***</sup>
+</td>
+<td>
+267.393<sup>***</sup>
+</td>
+<td>
+263.250<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(39.711)
+</td>
+<td>
+(39.788)
+</td>
+<td>
+(40.455)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Bell Canyon
+</td>
+<td>
+-264.189<sup>***</sup>
+</td>
+<td>
+-262.270<sup>***</sup>
+</td>
+<td>
+-174.672<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(44.285)
+</td>
+<td>
+(44.017)
+</td>
+<td>
+(44.532)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Devereaux
+</td>
+<td>
+1,727.261<sup>***</sup>
+</td>
+<td>
+1,737.033<sup>***</sup>
+</td>
+<td>
+1,657.922<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(45.836)
+</td>
+<td>
+(45.754)
+</td>
+<td>
+(46.564)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Gaviota
+</td>
+<td>
+138.141<sup>***</sup>
+</td>
+<td>
+154.394<sup>***</sup>
+</td>
+<td>
+157.390<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(29.793)
+</td>
+<td>
+(29.903)
+</td>
+<td>
+(30.351)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Arroyo Hondo
+</td>
+<td>
+-256.820<sup>***</sup>
+</td>
+<td>
+-204.351<sup>***</sup>
+</td>
+<td>
+-233.454<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(46.737)
+</td>
+<td>
+(46.710)
+</td>
+<td>
+(47.628)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Mission at Montecito
+</td>
+<td>
+-371.673<sup>***</sup>
+</td>
+<td>
+-353.232<sup>***</sup>
+</td>
+<td>
+-378.226<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(29.396)
+</td>
+<td>
+(29.502)
+</td>
+<td>
+(29.976)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Mission at Rocky
+</td>
+<td>
+-338.164<sup>***</sup>
+</td>
+<td>
+-303.267<sup>***</sup>
+</td>
+<td>
+-354.002<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(41.103)
+</td>
+<td>
+(41.134)
+</td>
+<td>
+(41.898)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+San Onofre
+</td>
+<td>
+-463.251<sup>***</sup>
+</td>
+<td>
+-432.204<sup>***</sup>
+</td>
+<td>
+-380.020<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(37.268)
+</td>
+<td>
+(37.305)
+</td>
+<td>
+(37.748)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Refugio
+</td>
+<td>
+145.870<sup>***</sup>
+</td>
+<td>
+169.330<sup>***</sup>
+</td>
+<td>
+199.586<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(29.790)
+</td>
+<td>
+(29.822)
+</td>
+<td>
+(30.283)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Rattlesnake
+</td>
+<td>
+-510.580<sup>***</sup>
+</td>
+<td>
+-475.214<sup>***</sup>
+</td>
+<td>
+-459.324<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(30.434)
+</td>
+<td>
+(30.419)
+</td>
+<td>
+(30.896)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+San Pedro
+</td>
+<td>
+-357.364<sup>***</sup>
+</td>
+<td>
+-338.600<sup>***</sup>
+</td>
+<td>
+-366.516<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(43.572)
+</td>
+<td>
+(43.724)
+</td>
+<td>
+(44.433)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Tecolote
+</td>
+<td>
+-224.429<sup>***</sup>
+</td>
+<td>
+-207.543<sup>***</sup>
+</td>
+<td>
+-169.234<sup>**</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(73.998)
+</td>
+<td>
+(73.990)
+</td>
+<td>
+(75.376)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+NO3 (uM)
+</td>
+<td>
+-0.164
+</td>
+<td>
+</td>
+<td>
+0.831<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(0.102)
+</td>
+<td>
+</td>
+<td>
+(0.049)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+NH4 (uM)
+</td>
+<td>
+1.846<sup>***</sup>
+</td>
+<td>
+</td>
+<td>
+2.200<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(0.527)
+</td>
+<td>
+</td>
+<td>
+(0.501)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+PO4 (uM)
+</td>
+<td>
+-18.179<sup>***</sup>
+</td>
+<td>
+</td>
+<td>
+-37.974<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(1.710)
+</td>
+<td>
+</td>
+<td>
+(1.381)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Total dissolved nitrogen (uM)
+</td>
+<td>
+1.047<sup>***</sup>
+</td>
+<td>
+0.932<sup>***</sup>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(0.095)
+</td>
+<td>
+(0.044)
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Total dissolved phosphorus (uM)
+</td>
+<td>
+-39.089<sup>***</sup>
+</td>
+<td>
+-49.795<sup>***</sup>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(1.891)
+</td>
+<td>
+(1.478)
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Constant
+</td>
+<td>
+1,192.675<sup>***</sup>
+</td>
+<td>
+1,155.553<sup>***</sup>
+</td>
+<td>
+1,122.792<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(23.944)
+</td>
+<td>
+(23.815)
+</td>
+<td>
+(23.813)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td colspan="4" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Observations
+</td>
+<td>
+12,649
+</td>
+<td>
+12,649
+</td>
+<td>
+12,649
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+R<sup>2</sup>
+</td>
+<td>
+0.256
+</td>
+<td>
+0.248
+</td>
+<td>
+0.226
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Adjusted R<sup>2</sup>
+</td>
+<td>
+0.255
+</td>
+<td>
+0.247
+</td>
+<td>
+0.225
+</td>
+</tr>
+<tr>
+<td colspan="4" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+<em>Note:</em>
+</td>
+<td colspan="3" style="text-align:right">
+<sup><em></sup>p&lt;0.1; <sup><strong></sup>p&lt;0.05; <sup></strong></em></sup>p&lt;0.01
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div id="correlation-matrices" class="section level4">
+<h4>2. Correlation matrices</h4>
+<p>look at correlations between numeric variables</p>
+<pre class="r"><code>colnames(chem_nona) &lt;- c(&quot;NH4&quot;, &quot;NO3&quot;, &quot;PO4&quot;, &quot;Total dissolved nitrogen&quot;, &quot;Total dissolved phosphorus&quot;, &quot;Specific conductivity&quot;)
+
+chem_cor &lt;- cor(chem_nona)
+# chem_cor
+
+corrplot(chem_cor, 
+         method = &quot;color&quot;, # could also do &quot;circle&quot;
+         type = &quot;lower&quot;,
+         tl.col = &quot;black&quot;,
+         tl.srt = 0.001,
+         tl.cex = 0.8,
+         tl.offset = 1,
+         addCoef.col = &quot;black&quot;,
+         outline = TRUE)</code></pre>
+<p><img src="/en/project/sb-chemistry/index_files/figure-html/cor-1.png" width="864" style="display: block; margin: auto;" />
+<strong><em>Figure. 2</em></strong> <em>The Scree plot for food nutrients PCA clearly presents the contributions of each principal component. Data source: Santa Barbara Coastal LTER and J. Melack. 2019.</em></p>
+<p><strong>Summary:</strong></p>
+<ul>
+<li>NO3 and total dissolved nitrogen are positive correlated strongly, PO4 concentration and total dissolved phosphorus have positive correlation as well;</li>
+<li>Nitrogen related measurements have positive correlation with conductivity; phosphorus related indexes are slightly negative correlated with conductivity.</li>
+<li>Pairs like NH4 and NO3, NO3 and PO4, TDN and TDP, NO3 and TDP have tiny correlations within each pair.</li>
+</ul>
+</div>
+<div id="principal-components-analysis" class="section level4">
+<h4>3. Principal components analysis</h4>
+<pre class="r"><code>chem_pca &lt;- prcomp(chem_nona, scale = TRUE)
+
+# summary(chem_pca)</code></pre>
+<pre class="r"><code># Vasuraling the PC contributions
+fviz_eig(chem_pca, addlabels = TRUE, ylim = c(0, 38))</code></pre>
+<p><img src="/en/project/sb-chemistry/index_files/figure-html/pca_scree-1.png" width="672" style="display: block; margin: auto;" />
+<strong><em>Figure. 3</em></strong> <em>The Scree plot for water quality measurement PCA clearly presents the contributions of each principal component. Data source: Santa Barbara Coastal LTER and J. Melack. 2019.</em></p>
+<pre class="r"><code>autoplot(chem_pca,
+         data = chem_full_nona,
+         colour = &quot;site_code&quot;,
+         size = 0.3,
+         loadings.label = TRUE,
+         loadings.label.size = 3,
+         loadings.label.colour = &quot;black&quot;,
+         loadings.label.repel = TRUE) +
+  scale_y_continuous(limits = c(-0.05, 0.075))+
+  labs(colour = &quot;Site Code&quot;)+
+  theme_minimal()</code></pre>
+<p><img src="/en/project/sb-chemistry/index_files/figure-html/pca_plot-1.png" width="672" style="display: block; margin: auto;" />
+<strong><em>Figure. 4</em></strong> <em>The biplot shows the loadings of each variable (red arrows with black labels) and the position for each observation (colorful points) in the first two principal components. Data source: Santa Barbara Coastal LTER and J. Melack. 2019.</em></p>
+<p><strong>Summary:</strong></p>
+<p>In this estimation, some correlations are noticeable:</p>
+<ul>
+<li>PO4 concentration and total dissolved phosphorus are positive correlated strongly, NO3 and total dissolved nitrogen have positive correlation as well;</li>
+<li>NO3 and dissolved nitrogen are positively correlated with conductivity;</li>
+<li>It seems no correlation between NH4 and conductivity;</li>
+<li>PO4 and total dissolved phosphorus are slightly negative correlated with conductivity.</li>
+</ul>
+</div>
+<div id="hierarchical-clustering" class="section level4">
+<h4>4. Hierarchical clustering</h4>
+<p>Relevant functions:</p>
+<p>stats::hclust() - agglomerative hierarchical clustering
+cluster::diana() - divisive hierarchical clustering</p>
+<pre class="r"><code>chem_hier &lt;- chem_full_nona %&gt;% 
+  group_by(site_code) %&gt;% 
+  summarize(
+    nh4 = mean(nh4_uM),
+    no3 = mean(no3_uM),
+    po4 = mean(po4_uM),
+    tdn = mean(tdn_uM),
+    tdp = mean(tdp_uM),
+    spec_cond = mean(spec_cond_uSpercm)
+  )
+
+# Scale it 
+chem_scaled &lt;- as.data.frame(scale(chem_hier[2:7]))
+
+# Update to add rownames (site name)
+rownames(chem_scaled) &lt;- chem_hier$site_code
+
+# Compute dissimilarity values (Euclidean distances):
+diss &lt;- dist(chem_scaled, method = &quot;euclidean&quot;)
+
+# Hierarchical clustering (complete linkage)
+hc_complete &lt;- hclust(diss, method = &quot;complete&quot;)
+
+# Convert to class &#39;dendro&#39; for ggplotting
+data1 &lt;- dendro_data(hc_complete)
+
+# Simple plot with ggdendrogram
+ggdendrogram(hc_complete, 
+             rotate = TRUE) +
+  theme_minimal() +
+  labs(x = &quot;Site code&quot;, y = &quot;&quot;)</code></pre>
+<p><img src="/en/project/sb-chemistry/index_files/figure-html/hr_data-1.png" width="672" style="display: block; margin: auto;" />
+<strong><em>Figure. 5</em></strong> <em>The cluster dendrogram for different sampling sites with complete method. We can see the similarity of water quality measurements among each group. Data source: Santa Barbara Coastal LTER and J. Melack. 2019.</em></p>
+<p>Divisive clustering:</p>
+<pre class="r"><code>hc_div &lt;- diana(diss)
+
+plot(hc_div, hang = -1)</code></pre>
+<p><img src="/en/project/sb-chemistry/index_files/figure-html/div_hc-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>rect.hclust(hc_div, k = 6, border = 2:5)</code></pre>
+<p><img src="/en/project/sb-chemistry/index_files/figure-html/div_hc-2.png" width="672" style="display: block; margin: auto;" />
+<strong><em>Figure. 6</em></strong> <em>The cluster dendrogram for different sampling sites with divisive clustering. We can see the similarity of water quality measurements among each group. Data source: Santa Barbara Coastal LTER and J. Melack. 2019.</em></p>
+<pre class="r"><code># Convert to class dendrogram
+dend1 &lt;- as.dendrogram(hc_complete)
+dend2 &lt;- as.dendrogram(hc_div)
+
+# Combine into list
+dend_list &lt;- dendlist(dend1,dend2)
+
+# Make a tanglegram
+tanglegram(dend1, dend2)</code></pre>
+<p><img src="/en/project/sb-chemistry/index_files/figure-html/compare_hc-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><strong><em>Figure. 7</em></strong> <em>The tanglegram shows the difference between complete method and divisive clustering in grouping the sites. Data source: Santa Barbara Coastal LTER and J. Melack. 2019.</em></p>
+<p>Data source: Santa Barbara Coastal LTER and J. Melack. 2019. SBC LTER: Land: Stream chemistry in the Santa Barbara Coastal drainage area, ongoing since 2000 ver 16. Environmental Data Initiative. <a href="https://doi.org/10.6073/pasta/67a558a24ceed9a0a5bf5e46ab841174" class="uri">https://doi.org/10.6073/pasta/67a558a24ceed9a0a5bf5e46ab841174</a>.</p>
+</div>
+</div>

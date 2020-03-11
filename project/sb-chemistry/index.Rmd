@@ -1,0 +1,281 @@
+---
+title: "Analysis Santa Barbara water chemistry with four ways"
+author: 'Ruoyu Wang'
+categories: []
+tags:
+  - R
+  - Academic
+subtitle: ''
+summary: 'Adpoting multiple linear regression, correlation matrices, principal components analysis and hierarchical clustering to describe the relationships among variables and groups.'
+authors: []
+lastmod: '2020-03-09T15:05:12-08:00'
+featured: no
+image:
+  caption: '[Buildings coastline pacific ocean Santa Barbara, California](https://cheshirecat.com/vacation-guide/buildings-coastline-pacific-ocean-santa-barbara-california/)'
+  focal_point: ''
+  preview_only: no 
+projects: []
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      warning = FALSE,
+                      message = FALSE,
+                      fig.align = "center")
+```
+
+### 1. Introduction
+
+In this report, we will explore the stream chemistry in Santa Barbara water shed with four different approaches. The data set includes dissolved nitrogen (nitrate, ammonium, total dissolved nitrogen); soluble reactive phosphorus (SRP); particulate organic carbon, nitrogen and phosphorus; total suspended sediments; and conductivity. Stream water samples are collected weekly during non-storm flows in winter, and bi-weekly during summer. During winter storms, samples are collected hourly (rising limb) or at 2-4 hour intervals (falling limb).
+
+### 2. Multiple methods to analysis data
+
+```{r library}
+# Attach necessary packages
+library(tidyverse)
+library(janitor)
+library(naniar) # for gg_miss_var, find the NA distribution
+library(stargazer) # regression table
+library(corrplot) # correlations plot
+library(gt) # make nice table
+library(plotly) # 3d plot_ly
+library(ggfortify) # autoplot for biplot
+library(factoextra) # PC contribution
+
+# Packages for cluster analysis:
+library(NbClust)
+library(cluster)
+library(factoextra)
+library(dendextend)
+library(ggdendro)
+```
+
+
+```{r data_pre}
+# Read in raw data, we can see the "-999" and "-999.0" should be the missing data
+chemistry <- read_csv("sbc_lter_registered_stream_chemistry.csv",
+                      na = c("-999", "-999.0"))
+
+# Only keep the numeric columns
+chem_num <- chemistry %>% 
+  select(-site_code, -timestamp_local)
+
+chem_full_nona <- chemistry %>% 
+  #select(-timestamp_local) %>% 
+  select(-tpp_uM, -tpn_uM, -tpc_uM, -tss_mgperLiter) %>% 
+  drop_na()
+  
+# Check the NA amount in each column
+gg_miss_var(chem_num)+
+  labs(x = "", y = "Number of missing variables")
+
+# The tpp, tpn, tpc, and tss contains too many missing values, we will exclude them for the future analysis
+
+# drop all the NAs version
+chem_nona <-  chem_num %>% 
+  select(-tpp_uM, -tpn_uM, -tpc_uM, -tss_mgperLiter) %>% 
+  drop_na()
+```
+
+***Figure. 1*** *The lollipop plot for the original data set clearly presents column tpp_uM, tpn_uM, tpc_uM, and tss_uM contains about 15,000 missing values. Data source: Santa Barbara Coastal LTER and J. Melack. 2019..*
+
+#### 1. Multiple linear regression
+
+```{r mlr}
+# Keep all the variables
+chem_lm1 <- lm(spec_cond_uSpercm ~ site_code + no3_uM + nh4_uM + po4_uM + tdn_uM + tdp_uM, data = chem_full_nona)
+
+# delete NO3, NH4 and PO4
+chem_lm2 <- lm(spec_cond_uSpercm ~ site_code + tdn_uM + tdp_uM, data = chem_full_nona)
+
+# Delete total dissolved N and P
+chem_lm3 <- lm(spec_cond_uSpercm ~ site_code + no3_uM + nh4_uM + po4_uM , data = chem_full_nona)
+
+# Delete the sampling locations
+chem_lm4 <- lm(spec_cond_uSpercm ~  no3_uM + nh4_uM + po4_uM + tdn_uM + tdp_uM, data = chem_full_nona)
+
+# summary(chem_lm1)
+# summary(chem_lm2)
+# summary(chem_lm3)
+# summary(chem_lm4)
+```
+
+AIC evaluates the multiple linear models. Normally, we would like to keep the model with lowest AIC.
+
+```{r aic}
+AIC(chem_lm1)
+AIC(chem_lm2)
+AIC(chem_lm3)
+AIC(chem_lm4)
+```
+The model 1 (with full variables) have the lowest AIC. Combining with reality, we know that though NO3 and NH4 are important part of total dissolved nitrogen, PO4 is the most common type of total dissolved P, there are many other kinds of N,P compounds in TDN and TDP. Therefore, none of the variables are redundant. We believe the model 1 is the most sound model conceptionally.
+
+***Table. 1*** *The regression table shows three different models to predict specific conductivity based on different factors. Model (1) considered the sample sites, nitrate, ammonium, phosphate, total dissolved nitrogen and total dissolved phosphorus's influence on specific conductivity. Model (2) only studied the effect from sites TDN, and TNP, while model (3) only considered the impact from sites and three inorganic N, P chemicals. Data: Santa Barbara Coastal LTER and J. Melack, 2019.* 
+
+<div align="center">
+```{r regression_table, results = "asis"}
+# Made a nice regression table with three models created above.
+stargazer(chem_lm1, chem_lm2, chem_lm3, type = "html", 
+          align = TRUE, dep.var.labels="Specific conductivity  (uS/cm)",
+          covariate.labels=c("Atascadero",
+                             "Bell Canyon",
+                             "Devereaux",
+                             "Gaviota",
+                             "Arroyo Hondo",
+                             "Mission at Montecito",
+                             "Mission at Rocky",
+                             "San Onofre",
+                             "Refugio",
+                             "Rattlesnake",
+                             "San Pedro",
+                             "Tecolote",
+                             "NO3 (uM)",
+                             "NH4 (uM)",
+                             "PO4 (uM)",
+                             "Total dissolved nitrogen (uM)",
+                             "Total dissolved phosphorus (uM)"),
+          omit.stat=c("LL","ser","f"), 
+          no.space=FALSE)
+```
+</div>
+
+
+
+#### 2. Correlation matrices
+
+look at correlations between numeric variables
+
+```{r cor, fig.width=9}
+colnames(chem_nona) <- c("NH4", "NO3", "PO4", "Total dissolved nitrogen", "Total dissolved phosphorus", "Specific conductivity")
+
+chem_cor <- cor(chem_nona)
+# chem_cor
+
+corrplot(chem_cor, 
+         method = "color", # could also do "circle"
+         type = "lower",
+         tl.col = "black",
+         tl.srt = 0.001,
+         tl.cex = 0.8,
+         tl.offset = 1,
+         addCoef.col = "black",
+         outline = TRUE)
+```
+***Figure. 2*** *The Scree plot for food nutrients PCA clearly presents the contributions of each principal component. Data source: Santa Barbara Coastal LTER and J. Melack. 2019.*
+
+**Summary:**
+
+- NO3 and total dissolved nitrogen are positive correlated strongly,  PO4 concentration and total dissolved phosphorus have positive correlation as well;
+- Nitrogen related measurements have positive correlation with conductivity; phosphorus related indexes are slightly negative correlated with conductivity.
+- Pairs like NH4 and NO3, NO3 and PO4, TDN and TDP, NO3 and TDP have tiny correlations within each pair.
+
+
+#### 3. Principal components analysis
+
+```{r pca}
+chem_pca <- prcomp(chem_nona, scale = TRUE)
+
+# summary(chem_pca)
+```
+
+```{r pca_scree}
+# Vasuraling the PC contributions
+fviz_eig(chem_pca, addlabels = TRUE, ylim = c(0, 38))
+```
+***Figure. 3*** *The Scree plot for water quality measurement PCA clearly presents the contributions of each principal component. Data source: Santa Barbara Coastal LTER and J. Melack. 2019.*
+
+```{r pca_plot}
+autoplot(chem_pca,
+         data = chem_full_nona,
+         colour = "site_code",
+         size = 0.3,
+         loadings.label = TRUE,
+         loadings.label.size = 3,
+         loadings.label.colour = "black",
+         loadings.label.repel = TRUE) +
+  scale_y_continuous(limits = c(-0.05, 0.075))+
+  labs(colour = "Site Code")+
+  theme_minimal()
+```
+***Figure. 4*** *The biplot shows the loadings of each variable (red arrows with black labels) and the position for each observation (colorful points) in the first two principal components. Data source: Santa Barbara Coastal LTER and J. Melack. 2019.*
+
+**Summary:**
+
+In this estimation, some correlations are noticeable:
+
+- PO4 concentration and total dissolved phosphorus are positive correlated strongly, NO3 and total dissolved nitrogen have positive correlation as well;
+- NO3 and dissolved nitrogen are positively correlated with conductivity;
+- It seems no correlation between NH4 and conductivity;
+- PO4 and total dissolved phosphorus are slightly negative correlated with conductivity.
+
+
+#### 4. Hierarchical clustering
+
+Relevant functions:
+
+stats::hclust() - agglomerative hierarchical clustering
+cluster::diana() - divisive hierarchical clustering
+
+```{r hr_data}
+chem_hier <- chem_full_nona %>% 
+  group_by(site_code) %>% 
+  summarize(
+    nh4 = mean(nh4_uM),
+    no3 = mean(no3_uM),
+    po4 = mean(po4_uM),
+    tdn = mean(tdn_uM),
+    tdp = mean(tdp_uM),
+    spec_cond = mean(spec_cond_uSpercm)
+  )
+
+# Scale it 
+chem_scaled <- as.data.frame(scale(chem_hier[2:7]))
+
+# Update to add rownames (site name)
+rownames(chem_scaled) <- chem_hier$site_code
+
+# Compute dissimilarity values (Euclidean distances):
+diss <- dist(chem_scaled, method = "euclidean")
+
+# Hierarchical clustering (complete linkage)
+hc_complete <- hclust(diss, method = "complete")
+
+# Convert to class 'dendro' for ggplotting
+data1 <- dendro_data(hc_complete)
+
+# Simple plot with ggdendrogram
+ggdendrogram(hc_complete, 
+             rotate = TRUE) +
+  theme_minimal() +
+  labs(x = "Site code", y = "")
+```
+***Figure. 5*** *The cluster dendrogram for different sampling sites with complete method. We can see the similarity of water quality measurements among each group. Data source: Santa Barbara Coastal LTER and J. Melack. 2019.*
+
+
+
+Divisive clustering:
+```{r div_hc}
+hc_div <- diana(diss)
+
+plot(hc_div, hang = -1)
+rect.hclust(hc_div, k = 6, border = 2:5)
+```
+***Figure. 6*** *The cluster dendrogram for different sampling sites with divisive clustering. We can see the similarity of water quality measurements among each group. Data source: Santa Barbara Coastal LTER and J. Melack. 2019.*
+
+```{r compare_hc}
+# Convert to class dendrogram
+dend1 <- as.dendrogram(hc_complete)
+dend2 <- as.dendrogram(hc_div)
+
+# Combine into list
+dend_list <- dendlist(dend1,dend2)
+
+# Make a tanglegram
+tanglegram(dend1, dend2)
+```
+
+***Figure. 7*** *The tanglegram shows the difference between complete method and divisive clustering in grouping the sites. Data source: Santa Barbara Coastal LTER and J. Melack. 2019.*
+
+Data source: Santa Barbara Coastal LTER and J. Melack. 2019. SBC LTER: Land: Stream chemistry in the Santa Barbara Coastal drainage area, ongoing since 2000 ver 16. Environmental Data Initiative. https://doi.org/10.6073/pasta/67a558a24ceed9a0a5bf5e46ab841174.
+
+

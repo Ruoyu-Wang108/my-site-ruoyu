@@ -1,5 +1,5 @@
 ---
-title: "Text Mining with Slient Spring"
+title: "Text Mining with Silent Spring"
 author: "Ruoyu Wang"
 # date: '2020-03-08'
 categories: []
@@ -10,7 +10,7 @@ summary: "In this report, we will analysis and visualize authors' sediments unde
 lastmod: '2020-03-08T15:05:12-08:00'
 featured: no
 image:
-  caption: 'Slient Spring on [PBA Galleries](https://www.pbagalleries.com/view-auctions/catalog/id/57/lot/13930/Silent-Spring)'
+  caption: 'Silent Spring on [PBA Galleries](https://www.pbagalleries.com/view-auctions/catalog/id/57/lot/13930/Silent-Spring)'
   focal_point: ''
   preview_only: no
 projects: []
@@ -18,15 +18,20 @@ projects: []
 
 
 
-<div id="data-preparation" class="section level3">
-<h3>1. Data preparation</h3>
+<div id="background" class="section level3">
+<h3>1. Background</h3>
+<p>Silent Spring is a book published in August, 1962 by Rachel Carson. This true story telling book focused the chemical damages on animals and ecosystem. Silent Spring encouraged huge discussion and reflection in the whole society. In this report, we will split the whole book into single words and analyze the sentimental tendency behind the words.</p>
+</div>
+<div id="tidy-version-of-texts" class="section level3">
+<h3>2. Tidy version of texts</h3>
+<p>First, read in the book PDF file.</p>
 <pre class="r"><code># Store the original pdf file
 silent_spring &lt;- &quot;silent_spring.pdf&quot;
 
 # Read in the pdf
 sil_spr_text &lt;- pdftools::pdf_text(silent_spring)
 # Each page goes into one row</code></pre>
-<p>Through <code>sil_spr_text</code>, we can see that the line breakers are <code>\n</code> comparing to the original text.</p>
+<p>Through <code>sil_spr_text</code>, we can see that the line breakers are <code>\n</code>.</p>
 <p>Next, we will split the pages into lines in the cells.</p>
 <pre class="r"><code>sil_spr_df &lt;- data.frame(sil_spr_text) %&gt;% 
   dplyr::mutate(text_full = stringr::str_split(sil_spr_text, 
@@ -48,12 +53,10 @@ sil_spr_nonum &lt;- sil_spr_stop %&gt;%
   dplyr::filter(is.na(as.numeric(word)))
   # filter out all the numbers</code></pre>
 </div>
-<div id="word-frenqucy-visualization" class="section level3">
-<h3>2. Word frenqucy visualization</h3>
-<ul>
-<li>What (non-stop) words are most common in the document?</li>
-</ul>
-<p>Word cloud</p>
+<div id="word-frequency-visualization" class="section level3">
+<h3>2. Word frequency visualization</h3>
+<div id="a.-the-most-common-meaningful-words-in-the-document" class="section level4">
+<h4>a. The most common meaningful words in the document</h4>
 <pre class="r"><code># Count the occurences of words
 sil_spr_n &lt;- sil_spr_nonum %&gt;% 
   count(word) 
@@ -63,7 +66,8 @@ wordcloud(words = sil_spr_n$word, freq = sil_spr_n$n,
           max.words = 200, random.order = FALSE,
           rot.per=0.35, 
           colors=brewer.pal(8, &quot;Dark2&quot;))</code></pre>
-<p><img src="/en/project/internal-project/index_files/figure-html/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="/en/project/text-mining/index_files/figure-html/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>With the word cloud, we can see the top-200 common words in this book. The font sizes also depend on the words’ frequency.</p>
 <pre class="r"><code>sil_spr_top20 &lt;- sil_spr_n %&gt;% 
   arrange(-n) %&gt;% 
   head(20)
@@ -77,18 +81,19 @@ ggplot(data = sil_spr_top20,
                    y = 0, yend = n,
                    color = word),
                show.legend = FALSE) +
-  labs(x = &quot;&quot;, y = &quot;Occurence of words&quot;)+
+  labs(x = &quot;&quot;, y = &quot;Occurrence of words&quot;)+
   theme_minimal()+
   coord_flip()</code></pre>
-<p><img src="/en/project/internal-project/index_files/figure-html/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="/en/project/text-mining/index_files/figure-html/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>We can also see the exact occurrence of the top 20 words with a nice lollipop plot!</p>
 </div>
-<div id="text-setimental-analysis" class="section level3">
-<h3>3. Text setimental analysis</h3>
-<p>How many words are associated with each sentiment?</p>
-<p>Ordinal sediments, ranked values on negative (-5) to positive (5) scale</p>
-<p>Binary method, either positive or negative</p>
-<p>Descriptive method, words in emotional bins</p>
-<p>binary method</p>
+</div>
+<div id="text-sentimental-analysis" class="section level3">
+<h3>3. Text sentimental analysis</h3>
+<p>There are three ways to analyze the sentimental in the texts: (i) Binary method, either positive or negative scale; (ii) Ordinal sediments, ranked values from negative to positive (-5 ~ +5); (iii) Descriptive method, words in emotional bins.</p>
+</div>
+<div id="a.-binary-method" class="section level3">
+<h3>a. Binary method</h3>
 <pre class="r"><code>ss_bing &lt;- sil_spr_nonum %&gt;% 
   inner_join(get_sentiments(lexicon = &quot;bing&quot;))
 
@@ -104,13 +109,13 @@ ggplot(data = ss_bing_n)+
            width = 0.35)+
   labs(x = &quot;Sediments&quot;, y = &quot;Counts&quot;)+
   theme_minimal()</code></pre>
-<p><img src="/en/project/internal-project/index_files/figure-html/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>First, we search for words in the ordinal sediment data set:
-Polarity sentiment lexicons
-(ranked values on negative → positive scale) - “afinn”
-Polarity scores
-Most negative: -5
-Most positive: +5</p>
+<p><img src="/en/project/text-mining/index_files/figure-html/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>It seems that the author had more negative emotions than positive ones.</p>
+<div id="b.-ordinal-sediments" class="section level4">
+<h4>b. Ordinal sediments:</h4>
+<p>Polarity sentiment lexicons (ranked values on negative → positive scale) - “afinn”</p>
+<p>Polarity scores</p>
+<p>Most negative: -5; Most positive: +5.</p>
 <pre class="r"><code>sil_spr_afinn &lt;- sil_spr_nonum %&gt;% 
   inner_join(get_sentiments(lexicon = &quot;afinn&quot;))
 
@@ -122,7 +127,7 @@ ggplot(data = sil_spr_afinn_hist, aes(x = value, y = n))+
   geom_col(aes(fill = value), show.legend = FALSE)+
   labs(x = &quot;Sentimental score&quot;, y = &quot;Frequency&quot;)+
   theme_minimal()</code></pre>
-<p><img src="/en/project/internal-project/index_files/figure-html/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="/en/project/text-mining/index_files/figure-html/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>sil_spr_summary &lt;- sil_spr_afinn %&gt;% 
   summarize(
     mean_score = mean(value),
@@ -144,9 +149,9 @@ ggplot(data = ss_afinn_n5,
   facet_wrap(~value, ncol = 2, scales = &quot;free&quot;)+
   labs(x = &quot;&quot;, y = &quot;Frequency&quot;)+
   theme_minimal()</code></pre>
-<p><img src="/en/project/internal-project/index_files/figure-html/unnamed-chunk-10-1.png" width="864" style="display: block; margin: auto;" /></p>
-<p>Second, let’s test with emotional words method.
-The NRC Emotion Lexicon is a list of English words and their associations with eight basic emotions (anger, fear, anticipation, trust, surprise, sadness, joy, and disgust) and two sentiments (negative and positive</p>
+<p><img src="/en/project/text-mining/index_files/figure-html/unnamed-chunk-10-1.png" width="864" style="display: block; margin: auto;" /></p>
+<p>Second, let’s test with emotional words method.</p>
+<p>The NRC Emotion Lexicon is a list of English words and their associations with eight basic emotions (anger, fear, anticipation, trust, surprise, sadness, joy, and disgust) and two sentiments (negative and positive).</p>
 <pre class="r"><code>sil_spr_nrc &lt;- sil_spr_nonum %&gt;% 
   inner_join(get_sentiments(lexicon = &quot;nrc&quot;))
 
@@ -161,7 +166,7 @@ ggplot(data = ss_nrc_n)+
            show.legend = FALSE)+
   labs(x = &quot;Sediments&quot;, y = &quot;Counts&quot;)+
   theme_minimal()</code></pre>
-<p><img src="/en/project/internal-project/index_files/figure-html/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="/en/project/text-mining/index_files/figure-html/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>How do sentiment/top words compare for speeches/documents/etc. from two or more different groups, candidates, etc.?</p>
 <pre class="r"><code>ss_nrc_n5 &lt;- sil_spr_nrc %&gt;% 
   count(word, sentiment, sort = TRUE) %&gt;% 
@@ -178,5 +183,6 @@ ggplot(data = ss_nrc_n5,
   facet_wrap(~sentiment, ncol = 2, scales = &quot;free&quot;)+
   labs(x = &quot;&quot;, y = &quot;Frequency&quot;)+
   theme_minimal()</code></pre>
-<p><img src="/en/project/internal-project/index_files/figure-html/unnamed-chunk-12-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p><img src="/en/project/text-mining/index_files/figure-html/unnamed-chunk-12-1.png" width="768" style="display: block; margin: auto;" /></p>
+</div>
 </div>

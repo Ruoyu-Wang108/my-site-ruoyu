@@ -1,5 +1,5 @@
 ---
-title: 'Two Samples Unpaired T-test'
+title: 'Unpaired T-test with California Spiny Lobster'
 lastmod: '2019-11-06T15:05:12-08:00'
 author: 'Ruoyu Wang'
 output: html_document
@@ -8,10 +8,10 @@ tags:
   - Statictis
   - Academic
 subtitle: 'California Spiny Lobster Abundance and size among different locations during years'
-summary: 'Using data collected by Santa Barbara Coastal Long-Term Ecological Research program to compare the population, size of lobsters in MPAs and non-MPAs from 2012 to 2018.'
+summary: 'Comparing the population, size of lobsters in MPAs and non-MPAs from 2012 to 2018.'
 featured: no
 image:
-  caption: 'Bonneville Dam Spillway photo by Kirt Edblom on [flickr](https://www.flickr.com/photos/kirt_edblom/14150670993/in/photostream/)'
+  caption: 'California spiny lobster from [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Lobster_300.jpg)'
 ---
 
 

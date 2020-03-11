@@ -5,7 +5,7 @@
     <link>/zh/tags/academic/</link>
       <atom:link href="/zh/tags/academic/index.xml" rel="self" type="application/rss+xml" />
     <description>Academic</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>zh</language><copyright>2020</copyright><lastBuildDate>Thu, 09 Jan 2020 00:00:00 +0000</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>zh</language><copyright>2020</copyright><lastBuildDate>Mon, 09 Mar 2020 15:05:12 -0800</lastBuildDate>
     <image>
       <url>/images/icon_hu0b7a4cb9992c9ac0e91bd28ffd38dd00_9727_512x512_fill_lanczos_center_2.png</url>
       <title>Academic</title>
@@ -13,7 +13,993 @@
     </image>
     
     <item>
-      <title>Time series exploration and visualization</title>
+      <title>Analysis Santa Barbara water chemistry with four ways</title>
+      <link>/zh/project/sb-chemistry/</link>
+      <pubDate>Mon, 09 Mar 2020 15:05:12 -0800</pubDate>
+      <guid>/zh/project/sb-chemistry/</guid>
+      <description>
+
+
+&lt;div id=&#34;introduction&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;1. Introduction&lt;/h3&gt;
+&lt;p&gt;In this report, we will explore the stream chemistry in Santa Barbara water shed with four different approaches. The data set includes dissolved nitrogen (nitrate, ammonium, total dissolved nitrogen); soluble reactive phosphorus (SRP); particulate organic carbon, nitrogen and phosphorus; total suspended sediments; and conductivity. Stream water samples are collected weekly during non-storm flows in winter, and bi-weekly during summer. During winter storms, samples are collected hourly (rising limb) or at 2-4 hour intervals (falling limb).&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;multiple-methods-to-analysis-data&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;2. Multiple methods to analysis data&lt;/h3&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Attach necessary packages
+library(tidyverse)
+library(janitor)
+library(naniar) # for gg_miss_var, find the NA distribution
+library(stargazer) # regression table
+library(corrplot) # correlations plot
+library(gt) # make nice table
+library(plotly) # 3d plot_ly
+library(ggfortify) # autoplot for biplot
+library(factoextra) # PC contribution
+
+# Packages for cluster analysis:
+library(NbClust)
+library(cluster)
+library(factoextra)
+library(dendextend)
+library(ggdendro)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Read in raw data, we can see the &amp;quot;-999&amp;quot; and &amp;quot;-999.0&amp;quot; should be the missing data
+chemistry &amp;lt;- read_csv(&amp;quot;sbc_lter_registered_stream_chemistry.csv&amp;quot;,
+                      na = c(&amp;quot;-999&amp;quot;, &amp;quot;-999.0&amp;quot;))
+
+# Only keep the numeric columns
+chem_num &amp;lt;- chemistry %&amp;gt;% 
+  select(-site_code, -timestamp_local)
+
+chem_full_nona &amp;lt;- chemistry %&amp;gt;% 
+  #select(-timestamp_local) %&amp;gt;% 
+  select(-tpp_uM, -tpn_uM, -tpc_uM, -tss_mgperLiter) %&amp;gt;% 
+  drop_na()
+  
+# Check the NA amount in each column
+gg_miss_var(chem_num)+
+  labs(x = &amp;quot;&amp;quot;, y = &amp;quot;Number of missing variables&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/sb-chemistry/index_files/figure-html/data_pre-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# The tpp, tpn, tpc, and tss contains too many missing values, we will exclude them for the future analysis
+
+# drop all the NAs version
+chem_nona &amp;lt;-  chem_num %&amp;gt;% 
+  select(-tpp_uM, -tpn_uM, -tpc_uM, -tss_mgperLiter) %&amp;gt;% 
+  drop_na()&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;strong&gt;&lt;em&gt;Figure. 1&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;The lollipop plot for the original data set clearly presents column tpp_uM, tpn_uM, tpc_uM, and tss_uM contains about 15,000 missing values. Data source: Santa Barbara Coastal LTER and J. Melack. 2019..&lt;/em&gt;&lt;/p&gt;
+&lt;div id=&#34;multiple-linear-regression&#34; class=&#34;section level4&#34;&gt;
+&lt;h4&gt;1. Multiple linear regression&lt;/h4&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Keep all the variables
+chem_lm1 &amp;lt;- lm(spec_cond_uSpercm ~ site_code + no3_uM + nh4_uM + po4_uM + tdn_uM + tdp_uM, data = chem_full_nona)
+
+# delete NO3, NH4 and PO4
+chem_lm2 &amp;lt;- lm(spec_cond_uSpercm ~ site_code + tdn_uM + tdp_uM, data = chem_full_nona)
+
+# Delete total dissolved N and P
+chem_lm3 &amp;lt;- lm(spec_cond_uSpercm ~ site_code + no3_uM + nh4_uM + po4_uM , data = chem_full_nona)
+
+# Delete the sampling locations
+chem_lm4 &amp;lt;- lm(spec_cond_uSpercm ~  no3_uM + nh4_uM + po4_uM + tdn_uM + tdp_uM, data = chem_full_nona)
+
+# summary(chem_lm1)
+# summary(chem_lm2)
+# summary(chem_lm3)
+# summary(chem_lm4)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;AIC evaluates the multiple linear models. Normally, we would like to keep the model with lowest AIC.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;AIC(chem_lm1)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## [1] 205956.9&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;AIC(chem_lm2)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## [1] 206082.6&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;AIC(chem_lm3)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## [1] 206451.9&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;AIC(chem_lm4)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## [1] 208786&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The model 1 (with full variables) have the lowest AIC. Combining with reality, we know that though NO3 and NH4 are important part of total dissolved nitrogen, PO4 is the most common type of total dissolved P, there are many other kinds of N,P compounds in TDN and TDP. Therefore, none of the variables are redundant. We believe the model 1 is the most sound model conceptionally.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;&lt;em&gt;Table. 1&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;The regression table shows three different models to predict specific conductivity based on different factors. Model (1) considered the sample sites, nitrate, ammonium, phosphate, total dissolved nitrogen and total dissolved phosphorus’s influence on specific conductivity. Model (2) only studied the effect from sites TDN, and TNP, while model (3) only considered the impact from sites and three inorganic N, P chemicals. Data: Santa Barbara Coastal LTER and J. Melack, 2019.&lt;/em&gt;&lt;/p&gt;
+&lt;div align=&#34;center&#34;&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Made a nice regression table with three models created above.
+stargazer(chem_lm1, chem_lm2, chem_lm3, type = &amp;quot;html&amp;quot;, 
+          align = TRUE, dep.var.labels=&amp;quot;Specific conductivity  (uS/cm)&amp;quot;,
+          covariate.labels=c(&amp;quot;Atascadero&amp;quot;,
+                             &amp;quot;Bell Canyon&amp;quot;,
+                             &amp;quot;Devereaux&amp;quot;,
+                             &amp;quot;Gaviota&amp;quot;,
+                             &amp;quot;Arroyo Hondo&amp;quot;,
+                             &amp;quot;Mission at Montecito&amp;quot;,
+                             &amp;quot;Mission at Rocky&amp;quot;,
+                             &amp;quot;San Onofre&amp;quot;,
+                             &amp;quot;Refugio&amp;quot;,
+                             &amp;quot;Rattlesnake&amp;quot;,
+                             &amp;quot;San Pedro&amp;quot;,
+                             &amp;quot;Tecolote&amp;quot;,
+                             &amp;quot;NO3 (uM)&amp;quot;,
+                             &amp;quot;NH4 (uM)&amp;quot;,
+                             &amp;quot;PO4 (uM)&amp;quot;,
+                             &amp;quot;Total dissolved nitrogen (uM)&amp;quot;,
+                             &amp;quot;Total dissolved phosphorus (uM)&amp;quot;),
+          omit.stat=c(&amp;quot;LL&amp;quot;,&amp;quot;ser&amp;quot;,&amp;quot;f&amp;quot;), 
+          no.space=FALSE)&lt;/code&gt;&lt;/pre&gt;
+&lt;table style=&#34;text-align:center&#34;&gt;
+&lt;tr&gt;
+&lt;td colspan=&#34;4&#34; style=&#34;border-bottom: 1px solid black&#34;&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td colspan=&#34;3&#34;&gt;
+&lt;em&gt;Dependent variable:&lt;/em&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td colspan=&#34;3&#34; style=&#34;border-bottom: 1px solid black&#34;&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td colspan=&#34;3&#34;&gt;
+Specific conductivity (uS/cm)
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+(1)
+&lt;/td&gt;
+&lt;td&gt;
+(2)
+&lt;/td&gt;
+&lt;td&gt;
+(3)
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td colspan=&#34;4&#34; style=&#34;border-bottom: 1px solid black&#34;&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+Atascadero
+&lt;/td&gt;
+&lt;td&gt;
+303.042&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+267.393&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+263.250&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+(39.711)
+&lt;/td&gt;
+&lt;td&gt;
+(39.788)
+&lt;/td&gt;
+&lt;td&gt;
+(40.455)
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+Bell Canyon
+&lt;/td&gt;
+&lt;td&gt;
+-264.189&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+-262.270&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+-174.672&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+(44.285)
+&lt;/td&gt;
+&lt;td&gt;
+(44.017)
+&lt;/td&gt;
+&lt;td&gt;
+(44.532)
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+Devereaux
+&lt;/td&gt;
+&lt;td&gt;
+1,727.261&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+1,737.033&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+1,657.922&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+(45.836)
+&lt;/td&gt;
+&lt;td&gt;
+(45.754)
+&lt;/td&gt;
+&lt;td&gt;
+(46.564)
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+Gaviota
+&lt;/td&gt;
+&lt;td&gt;
+138.141&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+154.394&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+157.390&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+(29.793)
+&lt;/td&gt;
+&lt;td&gt;
+(29.903)
+&lt;/td&gt;
+&lt;td&gt;
+(30.351)
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+Arroyo Hondo
+&lt;/td&gt;
+&lt;td&gt;
+-256.820&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+-204.351&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+-233.454&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+(46.737)
+&lt;/td&gt;
+&lt;td&gt;
+(46.710)
+&lt;/td&gt;
+&lt;td&gt;
+(47.628)
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+Mission at Montecito
+&lt;/td&gt;
+&lt;td&gt;
+-371.673&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+-353.232&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+-378.226&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+(29.396)
+&lt;/td&gt;
+&lt;td&gt;
+(29.502)
+&lt;/td&gt;
+&lt;td&gt;
+(29.976)
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+Mission at Rocky
+&lt;/td&gt;
+&lt;td&gt;
+-338.164&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+-303.267&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+-354.002&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+(41.103)
+&lt;/td&gt;
+&lt;td&gt;
+(41.134)
+&lt;/td&gt;
+&lt;td&gt;
+(41.898)
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+San Onofre
+&lt;/td&gt;
+&lt;td&gt;
+-463.251&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+-432.204&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+-380.020&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+(37.268)
+&lt;/td&gt;
+&lt;td&gt;
+(37.305)
+&lt;/td&gt;
+&lt;td&gt;
+(37.748)
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+Refugio
+&lt;/td&gt;
+&lt;td&gt;
+145.870&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+169.330&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+199.586&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+(29.790)
+&lt;/td&gt;
+&lt;td&gt;
+(29.822)
+&lt;/td&gt;
+&lt;td&gt;
+(30.283)
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+Rattlesnake
+&lt;/td&gt;
+&lt;td&gt;
+-510.580&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+-475.214&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+-459.324&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+(30.434)
+&lt;/td&gt;
+&lt;td&gt;
+(30.419)
+&lt;/td&gt;
+&lt;td&gt;
+(30.896)
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+San Pedro
+&lt;/td&gt;
+&lt;td&gt;
+-357.364&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+-338.600&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+-366.516&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+(43.572)
+&lt;/td&gt;
+&lt;td&gt;
+(43.724)
+&lt;/td&gt;
+&lt;td&gt;
+(44.433)
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+Tecolote
+&lt;/td&gt;
+&lt;td&gt;
+-224.429&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+-207.543&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+-169.234&lt;sup&gt;**&lt;/sup&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+(73.998)
+&lt;/td&gt;
+&lt;td&gt;
+(73.990)
+&lt;/td&gt;
+&lt;td&gt;
+(75.376)
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+NO3 (uM)
+&lt;/td&gt;
+&lt;td&gt;
+-0.164
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+0.831&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+(0.102)
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+(0.049)
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+NH4 (uM)
+&lt;/td&gt;
+&lt;td&gt;
+1.846&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+2.200&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+(0.527)
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+(0.501)
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+PO4 (uM)
+&lt;/td&gt;
+&lt;td&gt;
+-18.179&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+-37.974&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+(1.710)
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+(1.381)
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+Total dissolved nitrogen (uM)
+&lt;/td&gt;
+&lt;td&gt;
+1.047&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+0.932&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+(0.095)
+&lt;/td&gt;
+&lt;td&gt;
+(0.044)
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+Total dissolved phosphorus (uM)
+&lt;/td&gt;
+&lt;td&gt;
+-39.089&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+-49.795&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+(1.891)
+&lt;/td&gt;
+&lt;td&gt;
+(1.478)
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+Constant
+&lt;/td&gt;
+&lt;td&gt;
+1,192.675&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+1,155.553&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+1,122.792&lt;sup&gt;***&lt;/sup&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+(23.944)
+&lt;/td&gt;
+&lt;td&gt;
+(23.815)
+&lt;/td&gt;
+&lt;td&gt;
+(23.813)
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;td&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td colspan=&#34;4&#34; style=&#34;border-bottom: 1px solid black&#34;&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+Observations
+&lt;/td&gt;
+&lt;td&gt;
+12,649
+&lt;/td&gt;
+&lt;td&gt;
+12,649
+&lt;/td&gt;
+&lt;td&gt;
+12,649
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+R&lt;sup&gt;2&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+0.256
+&lt;/td&gt;
+&lt;td&gt;
+0.248
+&lt;/td&gt;
+&lt;td&gt;
+0.226
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+Adjusted R&lt;sup&gt;2&lt;/sup&gt;
+&lt;/td&gt;
+&lt;td&gt;
+0.255
+&lt;/td&gt;
+&lt;td&gt;
+0.247
+&lt;/td&gt;
+&lt;td&gt;
+0.225
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td colspan=&#34;4&#34; style=&#34;border-bottom: 1px solid black&#34;&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;
+&lt;em&gt;Note:&lt;/em&gt;
+&lt;/td&gt;
+&lt;td colspan=&#34;3&#34; style=&#34;text-align:right&#34;&gt;
+&lt;sup&gt;&lt;em&gt;&lt;/sup&gt;p&amp;lt;0.1; &lt;sup&gt;&lt;strong&gt;&lt;/sup&gt;p&amp;lt;0.05; &lt;sup&gt;&lt;/strong&gt;&lt;/em&gt;&lt;/sup&gt;p&amp;lt;0.01
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&#34;correlation-matrices&#34; class=&#34;section level4&#34;&gt;
+&lt;h4&gt;2. Correlation matrices&lt;/h4&gt;
+&lt;p&gt;look at correlations between numeric variables&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;colnames(chem_nona) &amp;lt;- c(&amp;quot;NH4&amp;quot;, &amp;quot;NO3&amp;quot;, &amp;quot;PO4&amp;quot;, &amp;quot;Total dissolved nitrogen&amp;quot;, &amp;quot;Total dissolved phosphorus&amp;quot;, &amp;quot;Specific conductivity&amp;quot;)
+
+chem_cor &amp;lt;- cor(chem_nona)
+# chem_cor
+
+corrplot(chem_cor, 
+         method = &amp;quot;color&amp;quot;, # could also do &amp;quot;circle&amp;quot;
+         type = &amp;quot;lower&amp;quot;,
+         tl.col = &amp;quot;black&amp;quot;,
+         tl.srt = 0.001,
+         tl.cex = 0.8,
+         tl.offset = 1,
+         addCoef.col = &amp;quot;black&amp;quot;,
+         outline = TRUE)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/sb-chemistry/index_files/figure-html/cor-1.png&#34; width=&#34;864&#34; style=&#34;display: block; margin: auto;&#34; /&gt;
+&lt;strong&gt;&lt;em&gt;Figure. 2&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;The Scree plot for food nutrients PCA clearly presents the contributions of each principal component. Data source: Santa Barbara Coastal LTER and J. Melack. 2019.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Summary:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;NO3 and total dissolved nitrogen are positive correlated strongly, PO4 concentration and total dissolved phosphorus have positive correlation as well;&lt;/li&gt;
+&lt;li&gt;Nitrogen related measurements have positive correlation with conductivity; phosphorus related indexes are slightly negative correlated with conductivity.&lt;/li&gt;
+&lt;li&gt;Pairs like NH4 and NO3, NO3 and PO4, TDN and TDP, NO3 and TDP have tiny correlations within each pair.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;div id=&#34;principal-components-analysis&#34; class=&#34;section level4&#34;&gt;
+&lt;h4&gt;3. Principal components analysis&lt;/h4&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;chem_pca &amp;lt;- prcomp(chem_nona, scale = TRUE)
+
+# summary(chem_pca)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Vasuraling the PC contributions
+fviz_eig(chem_pca, addlabels = TRUE, ylim = c(0, 38))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/sb-chemistry/index_files/figure-html/pca_scree-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;
+&lt;strong&gt;&lt;em&gt;Figure. 3&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;The Scree plot for water quality measurement PCA clearly presents the contributions of each principal component. Data source: Santa Barbara Coastal LTER and J. Melack. 2019.&lt;/em&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;autoplot(chem_pca,
+         data = chem_full_nona,
+         colour = &amp;quot;site_code&amp;quot;,
+         size = 0.3,
+         loadings.label = TRUE,
+         loadings.label.size = 3,
+         loadings.label.colour = &amp;quot;black&amp;quot;,
+         loadings.label.repel = TRUE) +
+  scale_y_continuous(limits = c(-0.05, 0.075))+
+  labs(colour = &amp;quot;Site Code&amp;quot;)+
+  theme_minimal()&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/sb-chemistry/index_files/figure-html/pca_plot-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;
+&lt;strong&gt;&lt;em&gt;Figure. 4&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;The biplot shows the loadings of each variable (red arrows with black labels) and the position for each observation (colorful points) in the first two principal components. Data source: Santa Barbara Coastal LTER and J. Melack. 2019.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Summary:&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;In this estimation, some correlations are noticeable:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;PO4 concentration and total dissolved phosphorus are positive correlated strongly, NO3 and total dissolved nitrogen have positive correlation as well;&lt;/li&gt;
+&lt;li&gt;NO3 and dissolved nitrogen are positively correlated with conductivity;&lt;/li&gt;
+&lt;li&gt;It seems no correlation between NH4 and conductivity;&lt;/li&gt;
+&lt;li&gt;PO4 and total dissolved phosphorus are slightly negative correlated with conductivity.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;div id=&#34;hierarchical-clustering&#34; class=&#34;section level4&#34;&gt;
+&lt;h4&gt;4. Hierarchical clustering&lt;/h4&gt;
+&lt;p&gt;Relevant functions:&lt;/p&gt;
+&lt;p&gt;stats::hclust() - agglomerative hierarchical clustering
+cluster::diana() - divisive hierarchical clustering&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;chem_hier &amp;lt;- chem_full_nona %&amp;gt;% 
+  group_by(site_code) %&amp;gt;% 
+  summarize(
+    nh4 = mean(nh4_uM),
+    no3 = mean(no3_uM),
+    po4 = mean(po4_uM),
+    tdn = mean(tdn_uM),
+    tdp = mean(tdp_uM),
+    spec_cond = mean(spec_cond_uSpercm)
+  )
+
+# Scale it 
+chem_scaled &amp;lt;- as.data.frame(scale(chem_hier[2:7]))
+
+# Update to add rownames (site name)
+rownames(chem_scaled) &amp;lt;- chem_hier$site_code
+
+# Compute dissimilarity values (Euclidean distances):
+diss &amp;lt;- dist(chem_scaled, method = &amp;quot;euclidean&amp;quot;)
+
+# Hierarchical clustering (complete linkage)
+hc_complete &amp;lt;- hclust(diss, method = &amp;quot;complete&amp;quot;)
+
+# Convert to class &amp;#39;dendro&amp;#39; for ggplotting
+data1 &amp;lt;- dendro_data(hc_complete)
+
+# Simple plot with ggdendrogram
+ggdendrogram(hc_complete, 
+             rotate = TRUE) +
+  theme_minimal() +
+  labs(x = &amp;quot;Site code&amp;quot;, y = &amp;quot;&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/sb-chemistry/index_files/figure-html/hr_data-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;
+&lt;strong&gt;&lt;em&gt;Figure. 5&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;The cluster dendrogram for different sampling sites with complete method. We can see the similarity of water quality measurements among each group. Data source: Santa Barbara Coastal LTER and J. Melack. 2019.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;Divisive clustering:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;hc_div &amp;lt;- diana(diss)
+
+plot(hc_div, hang = -1)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/sb-chemistry/index_files/figure-html/div_hc-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;rect.hclust(hc_div, k = 6, border = 2:5)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/sb-chemistry/index_files/figure-html/div_hc-2.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;
+&lt;strong&gt;&lt;em&gt;Figure. 6&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;The cluster dendrogram for different sampling sites with divisive clustering. We can see the similarity of water quality measurements among each group. Data source: Santa Barbara Coastal LTER and J. Melack. 2019.&lt;/em&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Convert to class dendrogram
+dend1 &amp;lt;- as.dendrogram(hc_complete)
+dend2 &amp;lt;- as.dendrogram(hc_div)
+
+# Combine into list
+dend_list &amp;lt;- dendlist(dend1,dend2)
+
+# Make a tanglegram
+tanglegram(dend1, dend2)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/sb-chemistry/index_files/figure-html/compare_hc-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;&lt;em&gt;Figure. 7&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;The tanglegram shows the difference between complete method and divisive clustering in grouping the sites. Data source: Santa Barbara Coastal LTER and J. Melack. 2019.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;Data source: Santa Barbara Coastal LTER and J. Melack. 2019. SBC LTER: Land: Stream chemistry in the Santa Barbara Coastal drainage area, ongoing since 2000 ver 16. Environmental Data Initiative. &lt;a href=&#34;https://doi.org/10.6073/pasta/67a558a24ceed9a0a5bf5e46ab841174&#34; class=&#34;uri&#34;&gt;https://doi.org/10.6073/pasta/67a558a24ceed9a0a5bf5e46ab841174&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Time series exploration with steelhead salmon</title>
       <link>/zh/project/time-series/</link>
       <pubDate>Thu, 09 Jan 2020 00:00:00 +0000</pubDate>
       <guid>/zh/project/time-series/</guid>
@@ -43,7 +1029,7 @@ ggplot(data = steelhead_date, aes(x = date_new, y = value))+
   labs(x = &amp;quot;Date&amp;quot;, y = &amp;quot;Adult passage number (fish/day)&amp;quot;)+
   scale_color_paletteer_c(&amp;quot;grDevices::rainbow&amp;quot;)+
   theme_minimal()&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/project/time-series/index_files/figure-html/daily_figure-1.png&#34; width=&#34;768&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/time-series/index_files/figure-html/daily_figure-1.png&#34; width=&#34;768&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;&lt;em&gt;Figure. 2&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;Daily adult steelhead passage through Bonneville Dam. Different colors represent different years. Data source: Data from: Columbia Basin Research Available here: &lt;a href=&#34;http://www.cbr.washington.edu/dart/query/adult_graph_text&#34;&gt;Adult fish passage&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
 &lt;/div&gt;
 &lt;div id=&#34;b.-seasonplot-showing-monthly-passage-variation&#34; class=&#34;section level5&#34;&gt;
@@ -78,7 +1064,7 @@ ggplot(data = steel_season, aes(x = month, y = monthly_total, group = year))+
   scale_color_paletteer_c(&amp;quot;pals::kovesi.diverging_rainbow_bgymr_45_85_c67&amp;quot;)+
   labs(x = &amp;quot;&amp;quot;, y = &amp;quot;Monthly adult steelhead passage (fish/month)&amp;quot;, color = &amp;quot;Year&amp;quot;)+
   theme_minimal()&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/project/time-series/index_files/figure-html/seasonal_plot-1.png&#34; width=&#34;768&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/time-series/index_files/figure-html/seasonal_plot-1.png&#34; width=&#34;768&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;&lt;em&gt;Figure. 3&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;A seasonplot of adult steelhead passage across Bonneville Dam in different months for each year. The years present in different colors. From the past to the present, the color changes from blue to green, yellow and red. Data source: Data from: Columbia Basin Research Available here: &lt;a href=&#34;http://www.cbr.washington.edu/dart/query/adult_graph_text&#34;&gt;Adult fish passage&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;We can see strong and consistent pattern of the monthly passage amount within one year. The annual peaks often occur in August. Summer to early fall (July to September) is the main migration season for steelhead in this area. Besides, the size of migration seemed to grow recently. Most monthly passage amounts after 2000 (lines in red color) were relatively higher than those before 2000 (lines in colors other than red), especially in peak months.&lt;/p&gt;
 &lt;/div&gt;
@@ -101,7 +1087,7 @@ ggplot(data = steel_year, aes(x = year, y = year_total)) +
        y = &amp;quot;Annual adult steelhead passage (fish/year)&amp;quot;)+
   scale_x_continuous(breaks = c(1939, 1950, 1960, 1970, 1980, 1990, 2000, 2010, 2019))+
   theme_minimal()&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/project/time-series/index_files/figure-html/annual_plot-1.png&#34; width=&#34;768&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/time-series/index_files/figure-html/annual_plot-1.png&#34; width=&#34;768&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;&lt;em&gt;Figure. 4&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;Annual amount plot shows the fluctuation of the migration amounts during 1939-2019. Each column indicates the annual passage amount in the specific year. Data source: Data from: Columbia Basin Research Available here: &lt;a href=&#34;http://www.cbr.washington.edu/dart/query/adult_graph_text&#34;&gt;Adult fish passage&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;According to the Oregon Department of Fish &amp;amp; Wildlife, fish protection facilities renovations were in 1957 and 1998. Because our data only includes adult fish passage, normally there would be a time lag between spawning and increasing whole population. In this annual plot, we could see a huge rise in 2001, which was three years later than the 1998 project. However, no visible improvement happened after the 1957 program.&lt;/p&gt;
 &lt;/div&gt;
@@ -117,7 +1103,7 @@ components(dcmp) %&amp;gt;% autoplot() +
        subtitle = &amp;quot;Monthly passage = trend + season_year-month + remainder&amp;quot;,
        x = &amp;quot;Date (year-month)&amp;quot;)+
   theme_minimal()&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/project/time-series/index_files/figure-html/unnamed-chunk-1-1.png&#34; width=&#34;864&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/time-series/index_files/figure-html/unnamed-chunk-1-1.png&#34; width=&#34;864&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;&lt;em&gt;Figure. 5&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;Decomposition of the time series passage data during 1939-2019. Data source: Data from: Columbia Basin Research Available here: &lt;a href=&#34;http://www.cbr.washington.edu/dart/query/adult_graph_text&#34;&gt;Adult fish passage&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;From the original data, we could see strong seasonality, no clearly overall trend and cyclical trend. Considering the peak months are from July to August, we choose 3 as the window width. The trend in decomposition plot catches the changes in the original graph. The seasonal also contains the yearly peak feature. Additionally, the residuals seem relatively random.&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Use the autocorrelation function (ACF) to further examine the seasonality
@@ -125,7 +1111,7 @@ steel_ts %&amp;gt;%
   ACF(monthly_total) %&amp;gt;% 
   autoplot()+
   theme_minimal()&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/project/time-series/index_files/figure-html/acf-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/time-series/index_files/figure-html/acf-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;&lt;em&gt;Figure. 6&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;The autocorrelation function (ACF) of the time series passage data in 1939-2019. It shows the correlation of a time series data with itself. Data source: Columbia Basin Research Available here: &lt;a href=&#34;http://www.cbr.washington.edu/dart/query/adult_graph_text&#34;&gt;Adult fish passage&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;We can observe strong seasonality in this data. For example, months 3-9 are positively correlated with each other. Positive correlation also happens in month 10-14. While these two group are negatively correlated.&lt;/p&gt;
 &lt;/div&gt;
@@ -143,7 +1129,7 @@ steel_ts %&amp;gt;%
     </item>
     
     <item>
-      <title>Two Samples Unpaired T-test</title>
+      <title>Unpaired T-test with California Spiny Lobster</title>
       <link>/zh/project/ttest/</link>
       <pubDate>Wed, 06 Nov 2019 15:05:12 -0800</pubDate>
       <guid>/zh/project/ttest/</guid>
@@ -206,7 +1192,7 @@ ggplot(data = lob_year, aes(x = year, y = n)) +
   labs(x = &amp;quot;Year&amp;quot;, y = &amp;quot;Lobster population&amp;quot;)+
   scale_color_manual(values = cbPalette) +
   theme_minimal()&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/project/ttest/index_files/figure-html/AnnualChange-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/ttest/index_files/figure-html/AnnualChange-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;
 &lt;strong&gt;&lt;em&gt;Figure. 1&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;Lobster population changes from 2012 to 2018 in four different sites. IVEE means Isla Vista area, CARP = Carpinteria, NAPL = Naples, MOHK = Mohawk, AQUE = Arroyo Quemado, correspondingly. IVEE and NAPL belongs to MPA group, other three places are in non-MPA group. Data: SBC LTER.&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;In Arroyo Quemado area, the population of lobster has barely not changed during the years. While in Isla Vista area, the total amount of lobster has increased significantly especially in year 2016-2018, in contrast to other areas. Lobster amount in Naples generally in the trend of rising. Carpinteria’s lobster population experienced a period of increasing but dropped down in 2018.&lt;/p&gt;
 &lt;/div&gt;
@@ -230,7 +1216,7 @@ ggplot(data = lob_compare_site, aes(x = size_mm)) +
              labeller = labeller(site = site_labs))+
   scale_fill_manual(values = cbPalette) +
   theme_minimal() &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/project/ttest/index_files/figure-html/2year5siteHisto-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/ttest/index_files/figure-html/2year5siteHisto-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;&lt;em&gt;Figure. 2&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;Distribution of lobster size (mm) in 2012 and 2018 in five different sites. The height of bars in the figure shows the number of lobster in the size scale. The higher the bar is, the more number of lobster sizes are in that scale. The total bar area represent the total population of lobster. Data: SBC LTER.&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;Through vertical comparison, we can notice that in Isla Vista and Naples, the total amount of lobster has increased from 2012 to 2018; while the other three sites showed decrease in population. These site groups with different trends coincided with MPA and non-MPA group, meaning that Marine Protected Areas might have positive correlation to the population of lobster in that area.&lt;/p&gt;
 &lt;p&gt;Comparing horizontally, in year 2012, Carpinteria and Mohawk had relatively high population of lobster; while in year 2018, Isla Vista had the hugest amount of lobster.&lt;/p&gt;
@@ -420,7 +1406,7 @@ ggplot(data = lob_tdata, aes(x = size_mm, color = category, fill = category)) +
   annotate(&amp;quot;text&amp;quot;, x = 60, y = .045, label = &amp;quot;MPA&amp;quot;, color = &amp;quot;#56B4E9&amp;quot;) +
   annotate(&amp;quot;text&amp;quot;, x = 95, y = .045, label = &amp;quot;non-MPA&amp;quot;, color = &amp;quot;#CC79A7&amp;quot;) +
   theme_minimal()&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/project/ttest/index_files/figure-html/facet28-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/ttest/index_files/figure-html/facet28-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;&lt;em&gt;Figure. 3(a)&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;Lobster distribution in MPA and non-MPA groups at year 2012 and 2018. The blue color represents MPAs, purple represents non-MPAs. Data: SBC LTER.&lt;/em&gt;&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;lob_mpa &amp;lt;- lob_tdata %&amp;gt;% 
   filter(category == &amp;quot;MPA&amp;quot;) 
@@ -455,7 +1441,7 @@ ggplot(data = lob_tdata, aes(x = size_mm, fill = year, color = year)) +
   annotate(&amp;quot;text&amp;quot;, x = 88, y = .045, label = &amp;quot;2018&amp;quot;, color = &amp;quot;#009E73&amp;quot;) +
   annotate(&amp;quot;text&amp;quot;, x = 55, y = .045, label = &amp;quot;2012&amp;quot;, color = &amp;quot;#E69F00&amp;quot;) +
   theme_minimal()&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/project/ttest/index_files/figure-html/facetmpa-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/ttest/index_files/figure-html/facetmpa-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;
 &lt;strong&gt;&lt;em&gt;Figure. 3(b)&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;Lobster distribution within MPA and non-MPA groups at year 2012 and 2018. The orange color represents year 2012, green represents 2018. Data: SBC LTER.&lt;/em&gt;&lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;

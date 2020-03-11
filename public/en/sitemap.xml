@@ -48,8 +48,38 @@
   </url>
   
   <url>
+    <loc>/tags/academic/</loc>
+    <lastmod>2020-03-09T15:05:12-08:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="zh"
+                href="/zh/tags/academic/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="/tags/academic/"
+                />
+  </url>
+  
+  <url>
+    <loc>/project/sb-chemistry/</loc>
+    <lastmod>2020-03-09T15:05:12-08:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="zh"
+                href="/zh/project/sb-chemistry/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="/project/sb-chemistry/"
+                />
+  </url>
+  
+  <url>
     <loc>/project/</loc>
-    <lastmod>2020-03-08T15:05:12-08:00</lastmod>
+    <lastmod>2020-03-09T15:05:12-08:00</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="zh"
@@ -64,7 +94,7 @@
   
   <url>
     <loc>/tags/r/</loc>
-    <lastmod>2020-03-08T15:05:12-08:00</lastmod>
+    <lastmod>2020-03-09T15:05:12-08:00</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="zh"
@@ -79,7 +109,7 @@
   
   <url>
     <loc>/</loc>
-    <lastmod>2020-03-08T15:05:12-08:00</lastmod>
+    <lastmod>2020-03-09T15:05:12-08:00</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="zh"
@@ -94,7 +124,7 @@
   
   <url>
     <loc>/tags/</loc>
-    <lastmod>2020-03-08T15:05:12-08:00</lastmod>
+    <lastmod>2020-03-09T15:05:12-08:00</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="zh"
@@ -213,21 +243,6 @@
   </url>
   
   <url>
-    <loc>/tags/academic/</loc>
-    <lastmod>2020-02-18T15:05:12-08:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="zh"
-                href="/zh/tags/academic/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="/tags/academic/"
-                />
-  </url>
-  
-  <url>
     <loc>/tags/time-series/</loc>
     <lastmod>2020-02-18T15:05:12-08:00</lastmod>
     <xhtml:link
@@ -260,20 +275,30 @@
   <url>
     <loc>/tags/statistics/</loc>
     <lastmod>2019-11-22T15:05:12-08:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/project/kai/</loc>
-    <lastmod>2019-11-22T15:05:12-08:00</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="zh"
-                href="/zh/project/kai/"
+                href="/zh/tags/statistics/"
                 />
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
-                href="/project/kai/"
+                href="/tags/statistics/"
+                />
+  </url>
+  
+  <url>
+    <loc>/project/chi/</loc>
+    <lastmod>2019-11-22T15:05:12-08:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="zh"
+                href="/zh/project/chi/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="/project/chi/"
                 />
   </url>
   

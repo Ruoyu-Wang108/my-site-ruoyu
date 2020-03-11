@@ -13,22 +13,27 @@
     </image>
     
     <item>
-      <title>Text Mining with Slient Spring</title>
+      <title>Text Mining with Silent Spring</title>
       <link>/project/text-mining/</link>
       <pubDate>Sun, 08 Mar 2020 15:05:12 -0800</pubDate>
       <guid>/project/text-mining/</guid>
       <description>
 
 
-&lt;div id=&#34;data-preparation&#34; class=&#34;section level3&#34;&gt;
-&lt;h3&gt;1. Data preparation&lt;/h3&gt;
+&lt;div id=&#34;background&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;1. Background&lt;/h3&gt;
+&lt;p&gt;Silent Spring is a book published in August, 1962 by Rachel Carson. This true story telling book focused the chemical damages on animals and ecosystem. Silent Spring encouraged huge discussion and reflection in the whole society. In this report, we will split the whole book into single words and analyze the sentimental tendency behind the words.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;tidy-version-of-texts&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;2. Tidy version of texts&lt;/h3&gt;
+&lt;p&gt;First, read in the book PDF file.&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Store the original pdf file
 silent_spring &amp;lt;- &amp;quot;silent_spring.pdf&amp;quot;
 
 # Read in the pdf
 sil_spr_text &amp;lt;- pdftools::pdf_text(silent_spring)
 # Each page goes into one row&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Through &lt;code&gt;sil_spr_text&lt;/code&gt;, we can see that the line breakers are &lt;code&gt;\n&lt;/code&gt; comparing to the original text.&lt;/p&gt;
+&lt;p&gt;Through &lt;code&gt;sil_spr_text&lt;/code&gt;, we can see that the line breakers are &lt;code&gt;\n&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;Next, we will split the pages into lines in the cells.&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;sil_spr_df &amp;lt;- data.frame(sil_spr_text) %&amp;gt;% 
   dplyr::mutate(text_full = stringr::str_split(sil_spr_text, 
@@ -50,12 +55,10 @@ sil_spr_nonum &amp;lt;- sil_spr_stop %&amp;gt;%
   dplyr::filter(is.na(as.numeric(word)))
   # filter out all the numbers&lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
-&lt;div id=&#34;word-frenqucy-visualization&#34; class=&#34;section level3&#34;&gt;
-&lt;h3&gt;2. Word frenqucy visualization&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;What (non-stop) words are most common in the document?&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Word cloud&lt;/p&gt;
+&lt;div id=&#34;word-frequency-visualization&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;2. Word frequency visualization&lt;/h3&gt;
+&lt;div id=&#34;a.-the-most-common-meaningful-words-in-the-document&#34; class=&#34;section level4&#34;&gt;
+&lt;h4&gt;a. The most common meaningful words in the document&lt;/h4&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Count the occurences of words
 sil_spr_n &amp;lt;- sil_spr_nonum %&amp;gt;% 
   count(word) 
@@ -65,7 +68,8 @@ wordcloud(words = sil_spr_n$word, freq = sil_spr_n$n,
           max.words = 200, random.order = FALSE,
           rot.per=0.35, 
           colors=brewer.pal(8, &amp;quot;Dark2&amp;quot;))&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/en/project/internal-project/index_files/figure-html/unnamed-chunk-5-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/text-mining/index_files/figure-html/unnamed-chunk-5-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;With the word cloud, we can see the top-200 common words in this book. The font sizes also depend on the words’ frequency.&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;sil_spr_top20 &amp;lt;- sil_spr_n %&amp;gt;% 
   arrange(-n) %&amp;gt;% 
   head(20)
@@ -79,18 +83,19 @@ ggplot(data = sil_spr_top20,
                    y = 0, yend = n,
                    color = word),
                show.legend = FALSE) +
-  labs(x = &amp;quot;&amp;quot;, y = &amp;quot;Occurence of words&amp;quot;)+
+  labs(x = &amp;quot;&amp;quot;, y = &amp;quot;Occurrence of words&amp;quot;)+
   theme_minimal()+
   coord_flip()&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/en/project/internal-project/index_files/figure-html/unnamed-chunk-6-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/text-mining/index_files/figure-html/unnamed-chunk-6-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;We can also see the exact occurrence of the top 20 words with a nice lollipop plot!&lt;/p&gt;
 &lt;/div&gt;
-&lt;div id=&#34;text-setimental-analysis&#34; class=&#34;section level3&#34;&gt;
-&lt;h3&gt;3. Text setimental analysis&lt;/h3&gt;
-&lt;p&gt;How many words are associated with each sentiment?&lt;/p&gt;
-&lt;p&gt;Ordinal sediments, ranked values on negative (-5) to positive (5) scale&lt;/p&gt;
-&lt;p&gt;Binary method, either positive or negative&lt;/p&gt;
-&lt;p&gt;Descriptive method, words in emotional bins&lt;/p&gt;
-&lt;p&gt;binary method&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;text-sentimental-analysis&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;3. Text sentimental analysis&lt;/h3&gt;
+&lt;p&gt;There are three ways to analyze the sentimental in the texts: (i) Binary method, either positive or negative scale; (ii) Ordinal sediments, ranked values from negative to positive (-5 ~ +5); (iii) Descriptive method, words in emotional bins.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;a.-binary-method&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;a. Binary method&lt;/h3&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;ss_bing &amp;lt;- sil_spr_nonum %&amp;gt;% 
   inner_join(get_sentiments(lexicon = &amp;quot;bing&amp;quot;))
 
@@ -106,13 +111,13 @@ ggplot(data = ss_bing_n)+
            width = 0.35)+
   labs(x = &amp;quot;Sediments&amp;quot;, y = &amp;quot;Counts&amp;quot;)+
   theme_minimal()&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/en/project/internal-project/index_files/figure-html/unnamed-chunk-7-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;First, we search for words in the ordinal sediment data set:
-Polarity sentiment lexicons
-(ranked values on negative → positive scale) - “afinn”
-Polarity scores
-Most negative: -5
-Most positive: +5&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/text-mining/index_files/figure-html/unnamed-chunk-7-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;It seems that the author had more negative emotions than positive ones.&lt;/p&gt;
+&lt;div id=&#34;b.-ordinal-sediments&#34; class=&#34;section level4&#34;&gt;
+&lt;h4&gt;b. Ordinal sediments:&lt;/h4&gt;
+&lt;p&gt;Polarity sentiment lexicons (ranked values on negative → positive scale) - “afinn”&lt;/p&gt;
+&lt;p&gt;Polarity scores&lt;/p&gt;
+&lt;p&gt;Most negative: -5; Most positive: +5.&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;sil_spr_afinn &amp;lt;- sil_spr_nonum %&amp;gt;% 
   inner_join(get_sentiments(lexicon = &amp;quot;afinn&amp;quot;))
 
@@ -124,7 +129,7 @@ ggplot(data = sil_spr_afinn_hist, aes(x = value, y = n))+
   geom_col(aes(fill = value), show.legend = FALSE)+
   labs(x = &amp;quot;Sentimental score&amp;quot;, y = &amp;quot;Frequency&amp;quot;)+
   theme_minimal()&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/en/project/internal-project/index_files/figure-html/unnamed-chunk-8-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/text-mining/index_files/figure-html/unnamed-chunk-8-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;sil_spr_summary &amp;lt;- sil_spr_afinn %&amp;gt;% 
   summarize(
     mean_score = mean(value),
@@ -146,9 +151,9 @@ ggplot(data = ss_afinn_n5,
   facet_wrap(~value, ncol = 2, scales = &amp;quot;free&amp;quot;)+
   labs(x = &amp;quot;&amp;quot;, y = &amp;quot;Frequency&amp;quot;)+
   theme_minimal()&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/en/project/internal-project/index_files/figure-html/unnamed-chunk-10-1.png&#34; width=&#34;864&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;Second, let’s test with emotional words method.
-The NRC Emotion Lexicon is a list of English words and their associations with eight basic emotions (anger, fear, anticipation, trust, surprise, sadness, joy, and disgust) and two sentiments (negative and positive&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/text-mining/index_files/figure-html/unnamed-chunk-10-1.png&#34; width=&#34;864&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Second, let’s test with emotional words method.&lt;/p&gt;
+&lt;p&gt;The NRC Emotion Lexicon is a list of English words and their associations with eight basic emotions (anger, fear, anticipation, trust, surprise, sadness, joy, and disgust) and two sentiments (negative and positive).&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;sil_spr_nrc &amp;lt;- sil_spr_nonum %&amp;gt;% 
   inner_join(get_sentiments(lexicon = &amp;quot;nrc&amp;quot;))
 
@@ -163,7 +168,7 @@ ggplot(data = ss_nrc_n)+
            show.legend = FALSE)+
   labs(x = &amp;quot;Sediments&amp;quot;, y = &amp;quot;Counts&amp;quot;)+
   theme_minimal()&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/en/project/internal-project/index_files/figure-html/unnamed-chunk-11-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/text-mining/index_files/figure-html/unnamed-chunk-11-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;How do sentiment/top words compare for speeches/documents/etc. from two or more different groups, candidates, etc.?&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;ss_nrc_n5 &amp;lt;- sil_spr_nrc %&amp;gt;% 
   count(word, sentiment, sort = TRUE) %&amp;gt;% 
@@ -180,7 +185,8 @@ ggplot(data = ss_nrc_n5,
   facet_wrap(~sentiment, ncol = 2, scales = &amp;quot;free&amp;quot;)+
   labs(x = &amp;quot;&amp;quot;, y = &amp;quot;Frequency&amp;quot;)+
   theme_minimal()&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/en/project/internal-project/index_files/figure-html/unnamed-chunk-12-1.png&#34; width=&#34;768&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/text-mining/index_files/figure-html/unnamed-chunk-12-1.png&#34; width=&#34;768&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
 &lt;/div&gt;
 </description>
     </item>

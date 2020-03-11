@@ -1,5 +1,5 @@
 ---
-title: "Text Mining with Slient Spring"
+title: "Text Mining with Silent Spring"
 author: "Ruoyu Wang"
 # date: '2020-03-08'
 categories: []
@@ -10,7 +10,7 @@ summary: "In this report, we will analysis and visualize authors' sediments unde
 lastmod: '2020-03-08T15:05:12-08:00'
 featured: no
 image:
-  caption: 'Slient Spring on [PBA Galleries](https://www.pbagalleries.com/view-auctions/catalog/id/57/lot/13930/Silent-Spring)'
+  caption: 'Silent Spring on [PBA Galleries](https://www.pbagalleries.com/view-auctions/catalog/id/57/lot/13930/Silent-Spring)'
   focal_point: ''
   preview_only: no
 projects: []
@@ -37,8 +37,13 @@ library(wordcloud)
 library(RColorBrewer)
 ```
 
-### 1. Data preparation
+### 1. Background
 
+Silent Spring is a book published in August, 1962 by Rachel Carson. This true story telling book focused the chemical damages on animals and ecosystem. Silent Spring encouraged huge discussion and reflection in the whole society. In this report, we will split the whole book into single words and analyze the sentimental tendency behind the words.
+
+### 2. Tidy version of texts
+
+First, read in the book PDF file.
 ```{r}
 # Store the original pdf file
 silent_spring <- "silent_spring.pdf"
@@ -48,7 +53,7 @@ sil_spr_text <- pdftools::pdf_text(silent_spring)
 # Each page goes into one row
 ```
 
-Through `sil_spr_text`, we can see that the line breakers are `\n` comparing to the original text.
+Through `sil_spr_text`, we can see that the line breakers are `\n`.
 
 Next, we will split the pages into lines in the cells.
 
@@ -82,11 +87,11 @@ sil_spr_nonum <- sil_spr_stop %>%
   # filter out all the numbers
 ```
 
-### 2. Word frenqucy visualization
 
-- What (non-stop) words are most common in the document?
+### 2. Word frequency visualization
 
-Word cloud
+#### a. The most common meaningful words in the document
+
 ```{r}
 # Count the occurences of words
 sil_spr_n <- sil_spr_nonum %>% 
@@ -98,6 +103,8 @@ wordcloud(words = sil_spr_n$word, freq = sil_spr_n$n,
           rot.per=0.35, 
           colors=brewer.pal(8, "Dark2"))
 ```
+
+With the word cloud, we can see the top-200 common words in this book. The font sizes also depend on the words' frequency.
 
 ```{r}
 sil_spr_top20 <- sil_spr_n %>% 
@@ -113,24 +120,20 @@ ggplot(data = sil_spr_top20,
                    y = 0, yend = n,
                    color = word),
                show.legend = FALSE) +
-  labs(x = "", y = "Occurence of words")+
+  labs(x = "", y = "Occurrence of words")+
   theme_minimal()+
   coord_flip()
 
 ```
 
-### 3. Text setimental analysis
+We can also see the exact occurrence of the top 20 words with a nice lollipop plot!
 
-How many words are associated with each sentiment?
+### 3. Text sentimental analysis
 
-Ordinal sediments, ranked values on negative (-5) to positive (5) scale
+There are three ways to analyze the sentimental in the texts: (i) Binary method, either positive or negative scale; (ii) Ordinal sediments, ranked values from negative to positive (-5 ~ +5); (iii) Descriptive method, words in emotional bins.
 
-Binary method, either positive or negative
+### a. Binary method
 
-Descriptive method, words in emotional bins
-
-
-binary method
 ```{r}
 ss_bing <- sil_spr_nonum %>% 
   inner_join(get_sentiments(lexicon = "bing"))
@@ -149,12 +152,16 @@ ggplot(data = ss_bing_n)+
   theme_minimal()
 ```
 
-First, we search for words in the ordinal sediment data set:
-Polarity sentiment lexicons 
-(ranked values on negative → positive scale) - “afinn”
+It seems that the author had more negative emotions than positive ones.
+
+#### b. Ordinal sediments:
+
+Polarity sentiment lexicons (ranked values on negative → positive scale) - “afinn”
+
 Polarity scores
-Most negative: -5
-Most positive: +5
+
+Most negative: -5; Most positive: +5.
+
 ```{r}
 sil_spr_afinn <- sil_spr_nonum %>% 
   inner_join(get_sentiments(lexicon = "afinn"))
@@ -198,7 +205,8 @@ ggplot(data = ss_afinn_n5,
 
 
 Second, let's test with emotional words method.
-The NRC Emotion Lexicon is a list of English words and their associations with eight basic emotions (anger, fear, anticipation, trust, surprise, sadness, joy, and disgust) and two sentiments (negative and positive
+
+The NRC Emotion Lexicon is a list of English words and their associations with eight basic emotions (anger, fear, anticipation, trust, surprise, sadness, joy, and disgust) and two sentiments (negative and positive).
 
 ```{r fig.width=7}
 sil_spr_nrc <- sil_spr_nonum %>% 
