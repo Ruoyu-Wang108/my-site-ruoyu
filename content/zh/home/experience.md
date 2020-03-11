@@ -18,27 +18,45 @@ date_format = "Jan 2006"
 #   Leave `date_end` empty if it's your current employer.
 #   Begin/end multi-line descriptions with 3 quotes `"""`.
 [[experience]]
-  title = "CEO"
-  company = "GenCoin"
+  title = "Research Assistant"
+  company = "Northwest A&F University"
   company_url = ""
-  location = "California"
-  date_start = "2017-01-01"
-  date_end = ""
+  location = "Yangling, China"
+  date_start = "2018-10-01"
+  date_end = "2019-05-01"
   description = """
-  Responsibilities include:
+  Undergraduate dissertation:
   
-  * Analysing
-  * Modelling
-  * Deploying
+  * Researching on the feasibility of selenium (Se) enriched mushroom
+  * Simulating three cooking methods' effect on Se content and speciation
+  * Estimating the Se bioaccessbility in mushrooms in vitro
   """
 
 [[experience]]
-  title = "Professor"
-  company = "University X"
+  title = " Research Assistant"
+  company = "Northwest A&F University"
   company_url = ""
-  location = "California"
-  date_start = "2016-01-01"
-  date_end = "2016-12-31"
-  description = """Taught electronic engineering and researched semiconductor physics."""
+  location = "Yangling, China"
+  date_start = "2018-06-01"
+  date_end = "2018-07-01"
+  description = """
+  Environmental chemistry on water pollutants:
+  
+  * Preparing and manipulating bamboo biochar
+  * Studying the efficiency of biochar in removal ammonium with Humic Acid
+  """
 
+[[experience]]
+  title = "Intern"
+  company = "Northwest A&F University"
+  company_url = ""
+  location = "Yangling, China"
+  date_start = "2017-12-01"
+  date_end = "2018-01-01"
+  description = """
+  Environmental monitoring and assessment in water bodies:
+  
+  * Analyzing 12 water quality indicators for 67 different samples
+  * Evaluating pollution's health impacts on residents
+  """
 +++
