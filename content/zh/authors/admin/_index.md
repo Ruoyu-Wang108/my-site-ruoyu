@@ -13,8 +13,8 @@ education:
 email: "r_wang@ucsb.edu"
 interests:
 - 机器学习
-- 污染物化学
 - 地理信息系统
+- 环境污染物化学
 - 新能源与气候变化
 name: 王若宇
 organizations:
