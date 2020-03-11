@@ -48,6 +48,96 @@
   </url>
   
   <url>
+    <loc>/zh/project/</loc>
+    <lastmod>2020-03-08T15:05:12-08:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="/project/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="zh"
+                href="/zh/project/"
+                />
+  </url>
+  
+  <url>
+    <loc>/zh/tags/r/</loc>
+    <lastmod>2020-03-08T15:05:12-08:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="/tags/r/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="zh"
+                href="/zh/tags/r/"
+                />
+  </url>
+  
+  <url>
+    <loc>/zh/tags/</loc>
+    <lastmod>2020-03-08T15:05:12-08:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="/tags/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="zh"
+                href="/zh/tags/"
+                />
+  </url>
+  
+  <url>
+    <loc>/zh/tags/text-mining/</loc>
+    <lastmod>2020-03-08T15:05:12-08:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="/tags/text-mining/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="zh"
+                href="/zh/tags/text-mining/"
+                />
+  </url>
+  
+  <url>
+    <loc>/zh/project/text-mining/</loc>
+    <lastmod>2020-03-08T15:05:12-08:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="/project/text-mining/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="zh"
+                href="/zh/project/text-mining/"
+                />
+  </url>
+  
+  <url>
+    <loc>/zh/</loc>
+    <lastmod>2020-03-08T15:05:12-08:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="zh"
+                href="/zh/"
+                />
+  </url>
+  
+  <url>
     <loc>/zh/authors/admin/</loc>
     <lastmod>2020-02-14T00:00:00+00:00</lastmod>
     <xhtml:link
@@ -108,21 +198,6 @@
   </url>
   
   <url>
-    <loc>/zh/tags/</loc>
-    <lastmod>2020-02-18T15:05:12-08:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="/tags/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="zh"
-                href="/zh/tags/"
-                />
-  </url>
-  
-  <url>
     <loc>/zh/post/tsca/</loc>
     <lastmod>2020-02-14T00:00:00+00:00</lastmod>
     <xhtml:link
@@ -138,21 +213,6 @@
   </url>
   
   <url>
-    <loc>/zh/</loc>
-    <lastmod>2020-02-18T15:05:12-08:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="zh"
-                href="/zh/"
-                />
-  </url>
-  
-  <url>
     <loc>/zh/tags/academic/</loc>
     <lastmod>2020-02-18T15:05:12-08:00</lastmod>
     <xhtml:link
@@ -164,51 +224,6 @@
                 rel="alternate"
                 hreflang="zh"
                 href="/zh/tags/academic/"
-                />
-  </url>
-  
-  <url>
-    <loc>/zh/project/my-new-project/</loc>
-    <lastmod>2020-01-09T15:05:12-08:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="/project/my-new-project/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="zh"
-                href="/zh/project/my-new-project/"
-                />
-  </url>
-  
-  <url>
-    <loc>/zh/project/</loc>
-    <lastmod>2020-02-18T15:05:12-08:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="/project/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="zh"
-                href="/zh/project/"
-                />
-  </url>
-  
-  <url>
-    <loc>/zh/tags/r/</loc>
-    <lastmod>2020-02-18T15:05:12-08:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="/tags/r/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="zh"
-                href="/zh/tags/r/"
                 />
   </url>
   
@@ -393,21 +408,6 @@
   </url>
   
   <url>
-    <loc>/zh/tags/deep-learning/</loc>
-    <lastmod>2016-04-27T00:00:00+00:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="/tags/deep-learning/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="zh"
-                href="/zh/tags/deep-learning/"
-                />
-  </url>
-  
-  <url>
     <loc>/zh/tags/demo/</loc>
     <lastmod>2016-04-27T00:00:00+00:00</lastmod>
     <xhtml:link
@@ -423,32 +423,17 @@
   </url>
   
   <url>
-    <loc>/zh/project/external-project/</loc>
+    <loc>/zh/project/green-footprint/</loc>
     <lastmod>2016-04-27T00:00:00+00:00</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
-                href="/project/external-project/"
+                href="/project/green-footprint/"
                 />
     <xhtml:link
                 rel="alternate"
                 hreflang="zh"
-                href="/zh/project/external-project/"
-                />
-  </url>
-  
-  <url>
-    <loc>/zh/project/internal-project/</loc>
-    <lastmod>2016-04-27T00:00:00+00:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="/project/internal-project/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="zh"
-                href="/zh/project/internal-project/"
+                href="/zh/project/green-footprint/"
                 />
   </url>
   

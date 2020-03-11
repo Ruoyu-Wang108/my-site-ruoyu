@@ -5,7 +5,7 @@
     <link>/project/</link>
       <atom:link href="/project/index.xml" rel="self" type="application/rss+xml" />
     <description>Projects</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>2020</copyright><lastBuildDate>Thu, 09 Jan 2020 00:00:00 +0000</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>2020</copyright><lastBuildDate>Sun, 08 Mar 2020 15:05:12 -0800</lastBuildDate>
     <image>
       <url>/images/icon_hu0b7a4cb9992c9ac0e91bd28ffd38dd00_9727_512x512_fill_lanczos_center_2.png</url>
       <title>Projects</title>
@@ -13,16 +13,175 @@
     </image>
     
     <item>
-      <title>My Great Post!</title>
-      <link>/project/my-new-project/</link>
-      <pubDate>Thu, 09 Jan 2020 00:00:00 +0000</pubDate>
-      <guid>/project/my-new-project/</guid>
+      <title>Text Mining with Slient Spring</title>
+      <link>/project/text-mining/</link>
+      <pubDate>Sun, 08 Mar 2020 15:05:12 -0800</pubDate>
+      <guid>/project/text-mining/</guid>
       <description>
 
 
-&lt;p&gt;Here’s a grest post!&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;plot(cars)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/project/my-new-project/index_files/figure-html/unnamed-chunk-1-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;div id=&#34;data-preparation&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;1. Data preparation&lt;/h3&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Store the original pdf file
+silent_spring &amp;lt;- &amp;quot;silent_spring.pdf&amp;quot;
+
+# Read in the pdf
+sil_spr_text &amp;lt;- pdftools::pdf_text(silent_spring)
+# Each page goes into one row&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Through &lt;code&gt;sil_spr_text&lt;/code&gt;, we can see that the line breakers are &lt;code&gt;\n&lt;/code&gt; comparing to the original text.&lt;/p&gt;
+&lt;p&gt;Next, we will split the pages into lines in the cells.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;sil_spr_df &amp;lt;- data.frame(sil_spr_text) %&amp;gt;% 
+  dplyr::mutate(text_full = stringr::str_split(sil_spr_text, 
+                                               pattern = &amp;quot;\\n&amp;quot;)) %&amp;gt;% 
+  # Now each line is in the group of each page
+  unnest(text_full) %&amp;gt;% 
+  mutate(text_full = stringr::str_trim(text_full)) 
+  # remove extra white spaces at the beginning&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now, put each word into its own cell.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;sil_spr_tokens &amp;lt;- sil_spr_df %&amp;gt;% 
+  dplyr::select(-sil_spr_text) %&amp;gt;% # only keep the line column
+  unnest_tokens(word, text_full) # the new column is &amp;quot;word&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Notice that there are lots of meaningless words and numbers, we can remove the stop words and numeric pieces:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;sil_spr_stop &amp;lt;- sil_spr_tokens %&amp;gt;% 
+  anti_join(stop_words) 
+  # find and remove all the same words in the stop word list
+
+sil_spr_nonum &amp;lt;- sil_spr_stop %&amp;gt;% 
+  dplyr::filter(is.na(as.numeric(word)))
+  # filter out all the numbers&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;word-frenqucy-visualization&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;2. Word frenqucy visualization&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;What (non-stop) words are most common in the document?&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Word cloud&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Count the occurences of words
+sil_spr_n &amp;lt;- sil_spr_nonum %&amp;gt;% 
+  count(word) 
+
+# Make a nice wordcloud
+wordcloud(words = sil_spr_n$word, freq = sil_spr_n$n,
+          max.words = 200, random.order = FALSE,
+          rot.per=0.35, 
+          colors=brewer.pal(8, &amp;quot;Dark2&amp;quot;))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/internal-project/index_files/figure-html/unnamed-chunk-5-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;sil_spr_top20 &amp;lt;- sil_spr_n %&amp;gt;% 
+  arrange(-n) %&amp;gt;% 
+  head(20)
+
+# Make a nice lolipop plot for the word occurence
+ggplot(data = sil_spr_top20, 
+       aes(x = reorder(word, n), y = n)) +
+  geom_point(aes(color = word), size = 2,
+             show.legend = FALSE) +
+  geom_segment(aes(x = word, xend = word,
+                   y = 0, yend = n,
+                   color = word),
+               show.legend = FALSE) +
+  labs(x = &amp;quot;&amp;quot;, y = &amp;quot;Occurence of words&amp;quot;)+
+  theme_minimal()+
+  coord_flip()&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/internal-project/index_files/figure-html/unnamed-chunk-6-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;text-setimental-analysis&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;3. Text setimental analysis&lt;/h3&gt;
+&lt;p&gt;How many words are associated with each sentiment?&lt;/p&gt;
+&lt;p&gt;Ordinal sediments, ranked values on negative (-5) to positive (5) scale&lt;/p&gt;
+&lt;p&gt;Binary method, either positive or negative&lt;/p&gt;
+&lt;p&gt;Descriptive method, words in emotional bins&lt;/p&gt;
+&lt;p&gt;binary method&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;ss_bing &amp;lt;- sil_spr_nonum %&amp;gt;% 
+  inner_join(get_sentiments(lexicon = &amp;quot;bing&amp;quot;))
+
+# Find counts by sentiments
+
+ss_bing_n &amp;lt;- ss_bing %&amp;gt;% 
+  count(sentiment, sort = TRUE) 
+
+ggplot(data = ss_bing_n)+
+  geom_col(aes(x = reorder(sentiment, -n), y = n,
+               fill = sentiment),
+           show.legend = FALSE,
+           width = 0.35)+
+  labs(x = &amp;quot;Sediments&amp;quot;, y = &amp;quot;Counts&amp;quot;)+
+  theme_minimal()&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/internal-project/index_files/figure-html/unnamed-chunk-7-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;First, we search for words in the ordinal sediment data set:
+Polarity sentiment lexicons
+(ranked values on negative → positive scale) - “afinn”
+Polarity scores
+Most negative: -5
+Most positive: +5&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;sil_spr_afinn &amp;lt;- sil_spr_nonum %&amp;gt;% 
+  inner_join(get_sentiments(lexicon = &amp;quot;afinn&amp;quot;))
+
+# count the values of the sentiments
+sil_spr_afinn_hist &amp;lt;- sil_spr_afinn %&amp;gt;% 
+  count(value)
+
+ggplot(data = sil_spr_afinn_hist, aes(x = value, y = n))+
+  geom_col(aes(fill = value), show.legend = FALSE)+
+  labs(x = &amp;quot;Sentimental score&amp;quot;, y = &amp;quot;Frequency&amp;quot;)+
+  theme_minimal()&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/internal-project/index_files/figure-html/unnamed-chunk-8-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;sil_spr_summary &amp;lt;- sil_spr_afinn %&amp;gt;% 
+  summarize(
+    mean_score = mean(value),
+    median_score = median(value)
+  )&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;ss_afinn_n5 &amp;lt;- sil_spr_afinn %&amp;gt;% 
+  filter(! value == -5) %&amp;gt;% 
+  count(word, value, sort = TRUE) %&amp;gt;% 
+  group_by(value) %&amp;gt;% 
+  top_n(5) %&amp;gt;%  # col = n
+  ungroup()
+
+
+ggplot(data = ss_afinn_n5,
+                      aes(x = reorder(word, -n),
+                          y = n,
+                          fill = n))+
+  geom_col(show.legend = FALSE)+
+  facet_wrap(~value, ncol = 2, scales = &amp;quot;free&amp;quot;)+
+  labs(x = &amp;quot;&amp;quot;, y = &amp;quot;Frequency&amp;quot;)+
+  theme_minimal()&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/internal-project/index_files/figure-html/unnamed-chunk-10-1.png&#34; width=&#34;864&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Second, let’s test with emotional words method.
+The NRC Emotion Lexicon is a list of English words and their associations with eight basic emotions (anger, fear, anticipation, trust, surprise, sadness, joy, and disgust) and two sentiments (negative and positive&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;sil_spr_nrc &amp;lt;- sil_spr_nonum %&amp;gt;% 
+  inner_join(get_sentiments(lexicon = &amp;quot;nrc&amp;quot;))
+
+# Find counts by sentiments
+
+ss_nrc_n &amp;lt;- sil_spr_nrc %&amp;gt;% 
+  count(sentiment, sort = TRUE) 
+
+ggplot(data = ss_nrc_n)+
+  geom_col(aes(x = reorder(sentiment, -n), y = n,
+               fill = sentiment),
+           show.legend = FALSE)+
+  labs(x = &amp;quot;Sediments&amp;quot;, y = &amp;quot;Counts&amp;quot;)+
+  theme_minimal()&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/internal-project/index_files/figure-html/unnamed-chunk-11-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;How do sentiment/top words compare for speeches/documents/etc. from two or more different groups, candidates, etc.?&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;ss_nrc_n5 &amp;lt;- sil_spr_nrc %&amp;gt;% 
+  count(word, sentiment, sort = TRUE) %&amp;gt;% 
+  group_by(sentiment) %&amp;gt;% 
+  top_n(5) %&amp;gt;%  # col = n
+  ungroup()
+
+
+ggplot(data = ss_nrc_n5,
+                      aes(x = reorder(word, -n),
+                          y = n,
+                          fill = sentiment))+
+  geom_col(show.legend = FALSE)+
+  facet_wrap(~sentiment, ncol = 2, scales = &amp;quot;free&amp;quot;)+
+  labs(x = &amp;quot;&amp;quot;, y = &amp;quot;Frequency&amp;quot;)+
+  theme_minimal()&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/internal-project/index_files/figure-html/unnamed-chunk-12-1.png&#34; width=&#34;768&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
 </description>
     </item>
     
@@ -57,7 +216,7 @@ ggplot(data = steelhead_date, aes(x = date_new, y = value))+
   labs(x = &amp;quot;Date&amp;quot;, y = &amp;quot;Adult passage number (fish/day)&amp;quot;)+
   scale_color_paletteer_c(&amp;quot;grDevices::rainbow&amp;quot;)+
   theme_minimal()&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/project/time-series/index_files/figure-html/daily_figure-1.png&#34; width=&#34;768&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/time-series/index_files/figure-html/daily_figure-1.png&#34; width=&#34;768&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;&lt;em&gt;Figure. 2&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;Daily adult steelhead passage through Bonneville Dam. Different colors represent different years. Data source: Data from: Columbia Basin Research Available here: &lt;a href=&#34;http://www.cbr.washington.edu/dart/query/adult_graph_text&#34;&gt;Adult fish passage&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
 &lt;/div&gt;
 &lt;div id=&#34;b.-seasonplot-showing-monthly-passage-variation&#34; class=&#34;section level5&#34;&gt;
@@ -92,7 +251,7 @@ ggplot(data = steel_season, aes(x = month, y = monthly_total, group = year))+
   scale_color_paletteer_c(&amp;quot;pals::kovesi.diverging_rainbow_bgymr_45_85_c67&amp;quot;)+
   labs(x = &amp;quot;&amp;quot;, y = &amp;quot;Monthly adult steelhead passage (fish/month)&amp;quot;, color = &amp;quot;Year&amp;quot;)+
   theme_minimal()&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/project/time-series/index_files/figure-html/seasonal_plot-1.png&#34; width=&#34;768&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/time-series/index_files/figure-html/seasonal_plot-1.png&#34; width=&#34;768&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;&lt;em&gt;Figure. 3&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;A seasonplot of adult steelhead passage across Bonneville Dam in different months for each year. The years present in different colors. From the past to the present, the color changes from blue to green, yellow and red. Data source: Data from: Columbia Basin Research Available here: &lt;a href=&#34;http://www.cbr.washington.edu/dart/query/adult_graph_text&#34;&gt;Adult fish passage&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;We can see strong and consistent pattern of the monthly passage amount within one year. The annual peaks often occur in August. Summer to early fall (July to September) is the main migration season for steelhead in this area. Besides, the size of migration seemed to grow recently. Most monthly passage amounts after 2000 (lines in red color) were relatively higher than those before 2000 (lines in colors other than red), especially in peak months.&lt;/p&gt;
 &lt;/div&gt;
@@ -115,7 +274,7 @@ ggplot(data = steel_year, aes(x = year, y = year_total)) +
        y = &amp;quot;Annual adult steelhead passage (fish/year)&amp;quot;)+
   scale_x_continuous(breaks = c(1939, 1950, 1960, 1970, 1980, 1990, 2000, 2010, 2019))+
   theme_minimal()&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/project/time-series/index_files/figure-html/annual_plot-1.png&#34; width=&#34;768&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/time-series/index_files/figure-html/annual_plot-1.png&#34; width=&#34;768&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;&lt;em&gt;Figure. 4&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;Annual amount plot shows the fluctuation of the migration amounts during 1939-2019. Each column indicates the annual passage amount in the specific year. Data source: Data from: Columbia Basin Research Available here: &lt;a href=&#34;http://www.cbr.washington.edu/dart/query/adult_graph_text&#34;&gt;Adult fish passage&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;According to the Oregon Department of Fish &amp;amp; Wildlife, fish protection facilities renovations were in 1957 and 1998. Because our data only includes adult fish passage, normally there would be a time lag between spawning and increasing whole population. In this annual plot, we could see a huge rise in 2001, which was three years later than the 1998 project. However, no visible improvement happened after the 1957 program.&lt;/p&gt;
 &lt;/div&gt;
@@ -131,7 +290,7 @@ components(dcmp) %&amp;gt;% autoplot() +
        subtitle = &amp;quot;Monthly passage = trend + season_year-month + remainder&amp;quot;,
        x = &amp;quot;Date (year-month)&amp;quot;)+
   theme_minimal()&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/project/time-series/index_files/figure-html/unnamed-chunk-1-1.png&#34; width=&#34;864&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/time-series/index_files/figure-html/unnamed-chunk-1-1.png&#34; width=&#34;864&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;&lt;em&gt;Figure. 5&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;Decomposition of the time series passage data during 1939-2019. Data source: Data from: Columbia Basin Research Available here: &lt;a href=&#34;http://www.cbr.washington.edu/dart/query/adult_graph_text&#34;&gt;Adult fish passage&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;From the original data, we could see strong seasonality, no clearly overall trend and cyclical trend. Considering the peak months are from July to August, we choose 3 as the window width. The trend in decomposition plot catches the changes in the original graph. The seasonal also contains the yearly peak feature. Additionally, the residuals seem relatively random.&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Use the autocorrelation function (ACF) to further examine the seasonality
@@ -139,7 +298,7 @@ steel_ts %&amp;gt;%
   ACF(monthly_total) %&amp;gt;% 
   autoplot()+
   theme_minimal()&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/project/time-series/index_files/figure-html/acf-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/time-series/index_files/figure-html/acf-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;&lt;em&gt;Figure. 6&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;The autocorrelation function (ACF) of the time series passage data in 1939-2019. It shows the correlation of a time series data with itself. Data source: Columbia Basin Research Available here: &lt;a href=&#34;http://www.cbr.washington.edu/dart/query/adult_graph_text&#34;&gt;Adult fish passage&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;We can observe strong seasonality in this data. For example, months 3-9 are positively correlated with each other. Positive correlation also happens in month 10-14. While these two group are negatively correlated.&lt;/p&gt;
 &lt;/div&gt;
@@ -152,6 +311,237 @@ steel_ts %&amp;gt;%
 &lt;li&gt;&lt;p&gt;Oregon Department of Fish &amp;amp; Wildlife. (2019). Bonneville Hatchery Visitors’ Guide | Oregon Department of Fish &amp;amp; Wildlife. &lt;a href=&#34;https://myodfw.com/bonneville-hatchery-visitors-guide&#34; class=&#34;uri&#34;&gt;https://myodfw.com/bonneville-hatchery-visitors-guide&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
 &lt;li&gt;&lt;p&gt;Northwest Power and Conservation Council. (2015). Dams: Impacts on salmon and steelhead. &lt;a href=&#34;https://www.nwcouncil.org/reports/columbia-river-history/damsimpacts&#34; class=&#34;uri&#34;&gt;https://www.nwcouncil.org/reports/columbia-river-history/damsimpacts&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Time series exploration and visualization</title>
+      <link>/project/kai/</link>
+      <pubDate>Fri, 22 Nov 2019 15:05:12 -0800</pubDate>
+      <guid>/project/kai/</guid>
+      <description>
+&lt;script src=&#34;/rmarkdown-libs/kePrint/kePrint.js&#34;&gt;&lt;/script&gt;
+
+
+&lt;div id=&#34;background&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;1. Background&lt;/h3&gt;
+&lt;p&gt;Around 1963, sections of forests near Mack Creek, Oregon were clear cut, meaning the trees were uniformly cut down (Gregory 2016). In 1993, Stanley V. Gregory and researchers at the Andrews Forest LTER Site began including Pacific giant salamanders (Dicamptodon tenebrosus) in their study called &lt;em&gt;Aquatic Vertebrate Population Study in Mack Creek, Andrews Experimental Forest, 1987 to present.&lt;/em&gt; The researchers recorded the weights of salamanders (g) and documented their locations within the area. The two forest sections of Mack Creek include clear cut sections as well as 500-year-old coniferous old growth forests (Gregory 2016). Within the two sections of forests, salamanders are found in Cascade, Pool and Side Channel. This report does not include salamanders found in Isolated Pool, as these areas are separated from the creek. Studying the Pacific giant salamander population in this area is relevant to understanding how new forests- the result of clear cutting- affect local wildlife populations, and how these effects compare to populations living in old growth forests.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;Dicamptodon_tenebrosus_2.JPG&#34; width=&#34;60%&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;&lt;em&gt;Figure. 1&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;Pacific giant salamander (Dicamptodon tenebrosus). Credit: Jeffrey Marsten. &lt;a href=&#34;https://commons.wikimedia.org/wiki/File:Dicamptodon_tenebrosus_2.JPG&#34;&gt;Wikipedia&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;data-and-methods&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;2. Data and Methods&lt;/h3&gt;
+&lt;p&gt;The &lt;a href=&#34;https://portal.lternet.edu/nis/mapbrowse?packageid=knb-lter-and.4027.12&#34;&gt;data set&lt;/a&gt; used in this report was provided by the LTER Network Data Portal, and full metadata can be found &lt;a href=&#34;https://portal.lternet.edu/nis/metadataviewer?packageid=knb-lter-and.4027.12&#34;&gt;here&lt;/a&gt;. Sections of the forest are specified as clear cut (“CC”) and old growth (“OG”), while channel types are specified as Cascade, “C”, Pool, “P”, and Side Channel, “SC”. A Chi-squared (&lt;span class=&#34;math inline&#34;&gt;\(\chi\)&lt;/span&gt;&lt;sup&gt;2&lt;/sup&gt;) test was performed to determine if forest section was related to which channel type salamanders were found. Additionally, an unpaired two-sample t-test was used to find out if the weights of salamanders differed significantly between the two forest sections. Finally, a one-way ANOVA test was conducted to determine if there was a significant difference in mean salamander weight among the three channel types between the two forest sections. All analyses and figures were made using R Studio version 1.2.5001.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;mack_creek_map_3.png&#34; width=&#34;60%&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;&lt;em&gt;Figure. 2&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;Map of Oregon. The location of Mack Creek is designated by the red icon. Courtesy of &lt;a href=&#34;https://www.google.com/maps/place/44°13&amp;#39;17.3%22N+122°10&amp;#39;04.8%22W/@44.8758978,-124.1058318,7.57z/data=!4m5!3m4!1s0x0:0x0!8m2!3d44.2214667!4d-122.168!5m1!1e4?hl=en-US&#34;&gt;Google Maps&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;results&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Results&lt;/h3&gt;
+&lt;div id=&#34;a.-annual-salamander-population-in-two-forest-sections-of-mack-creek.&#34; class=&#34;section level4&#34;&gt;
+&lt;h4&gt;A. Annual salamander population in two forest sections of Mack Creek.&lt;/h4&gt;
+&lt;p&gt;Counts in clear cut forests tended to be less than counts in old growth forests until 2012.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/kai/index_files/figure-html/sections_line_graph-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;
+&lt;strong&gt;&lt;em&gt;Figure. 3&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;Annual counts of salamanders in Mack Creek from 1993 to 2017. Clear cut forests were shown as orange dotted line, the old growth forests were presented as blue line with triangles. Data: Andrews Forest LTER Site.&lt;/em&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;b.-salamander-abundance-by-channel-classification-and-forest-sections-in-2017.&#34; class=&#34;section level4&#34;&gt;
+&lt;h4&gt;B. Salamander abundance by channel classification and forest sections in 2017.&lt;/h4&gt;
+&lt;p&gt;&lt;strong&gt;&lt;em&gt;Table. 1&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;Summary table of 2017 salamander population by channel classifications (Pool, Cascade and Side Channel) in old growth (OG) and clear cut (CC) sections of Mack Creek. Data: Andrews Forest LTER Site.&lt;/em&gt;&lt;/p&gt;
+&lt;table class=&#34;table table-striped&#34; style=&#34;width: auto !important; margin-left: auto; margin-right: auto;&#34;&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th style=&#34;border-bottom:hidden; padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; &#34; colspan=&#34;4&#34;&gt;
+&lt;div style=&#34;border-bottom: 1px solid #ddd; padding-bottom: 5px; &#34;&gt;
+Salamander counts by channel and sections classification in 2017
+&lt;/div&gt;
+&lt;/th&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;th style=&#34;text-align:center;&#34;&gt;
+Section
+&lt;/th&gt;
+&lt;th style=&#34;text-align:center;&#34;&gt;
+Cascade
+&lt;/th&gt;
+&lt;th style=&#34;text-align:center;&#34;&gt;
+Pool
+&lt;/th&gt;
+&lt;th style=&#34;text-align:center;&#34;&gt;
+Side Channel
+&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:center;&#34;&gt;
+Clear Cut
+&lt;/td&gt;
+&lt;td style=&#34;text-align:center;&#34;&gt;
+247 (55%)
+&lt;/td&gt;
+&lt;td style=&#34;text-align:center;&#34;&gt;
+31 (41%)
+&lt;/td&gt;
+&lt;td style=&#34;text-align:center;&#34;&gt;
+90 (55%)
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:center;&#34;&gt;
+Old Growth
+&lt;/td&gt;
+&lt;td style=&#34;text-align:center;&#34;&gt;
+201 (45%)
+&lt;/td&gt;
+&lt;td style=&#34;text-align:center;&#34;&gt;
+45 (59%)
+&lt;/td&gt;
+&lt;td style=&#34;text-align:center;&#34;&gt;
+74 (45%)
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;The percentages show the proportions of salamanders in each channel type by section. For example, of the salamanders found in the cascade channel type, 55% were located in clear cut sections, while 45% were located in old growth sections.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;c.-association-between-channel-classifications-and-forest-sections-on-mean-salamander-weights.&#34; class=&#34;section level4&#34;&gt;
+&lt;h4&gt;C. Association between channel classifications and forest sections on mean salamander weights.&lt;/h4&gt;
+&lt;p&gt;Is there a significant difference in where in the channel Pacific giant salamanders are located (pool, cascade or side channel) between the two sections (old growth and clear cut)?&lt;/p&gt;
+&lt;p&gt;Looking into the Table.1, we could find that the percentages difference of two different sections within the same channel are relatively small, and all the percentages are close to 50%. It is possible that there is no connections between the sections and the channels to the weights of salamanders.&lt;/p&gt;
+&lt;p&gt;We use Chi-Square (&lt;span class=&#34;math inline&#34;&gt;\(\chi\)&lt;/span&gt;&lt;sup&gt;2&lt;/sup&gt;) test to compare proportions and find their inner relationship.&lt;/p&gt;
+&lt;p&gt;The Chi-Square (&lt;span class=&#34;math inline&#34;&gt;\(\chi\)&lt;/span&gt;&lt;sup&gt;2&lt;/sup&gt;) test results indicate that the proportions of salamanders in each section and channel type are to be expected if forest section is not a determining factor in where salamanders were located in Mack Creek. In other words, there was no significant difference in forest section (clear cut / old growth) based on which channel type salamanders were found (&lt;span class=&#34;math inline&#34;&gt;\(\chi\)&lt;/span&gt;&lt;sup&gt;2&lt;/sup&gt;(2) = 5.54, &lt;em&gt;p&lt;/em&gt; (0.063) &amp;gt; 0.05).&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;d.-the-influence-of-forest-sections-on-pacific-giant-salamander-weights.&#34; class=&#34;section level4&#34;&gt;
+&lt;h4&gt;D. The influence of forest sections on Pacific giant salamander weights.&lt;/h4&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/kai/index_files/figure-html/d_ttest_graph-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;
+&lt;strong&gt;&lt;em&gt;Figure. 4&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;Counts of salamanders by weight for old growth and clear cut forest sections in 2017. The orange dotted line indicates mean salamander weight for clear cut sections, while the blue dotted line indicates mean salamander weight for old growth sections. The means appear relatively close together. Data: Andrews Forest LTER Site.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;In year 2017, mean weight of Pacific giant salamanders (g) measured in clear cut forests (7.78 &lt;span class=&#34;math inline&#34;&gt;\(\pm\)&lt;/span&gt; 9.9, n = 368) was not significantly different from the average salamander weight in old growth forest areas (6.58 &lt;span class=&#34;math inline&#34;&gt;\(\pm\)&lt;/span&gt; 8.96, n = 328) by a unpaired two-sample t-test (t(692.79) = 1.67, &lt;em&gt;p&lt;/em&gt;(0.096) &amp;gt; 0.05) . The difference in mean weight between the two groups is 1.20 g, with a negligible effect size (Cohen’s d = 0.13). Therefore, we consider the salamander weights in clear cut areas were not significantly different from old growth ones. Histogram was presented in Figure.4.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;e.-the-influence-of-channel-classifications-on-pacific-giant-salamanders-weights.&#34; class=&#34;section level4&#34;&gt;
+&lt;h4&gt;E. The influence of channel classifications on Pacific giant salamanders weights.&lt;/h4&gt;
+&lt;p&gt;&lt;strong&gt;1. Visually compare Pacific giant salamander weights between the three channel classifications.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/en/project/kai/index_files/figure-html/e_channel_beeswarm-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;&lt;em&gt;Figure. 5&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;The weight distribution, mean, and standard deviation graph of Pacific giant salamanders in channels- Pool(blue), Side Channel(pink), Cascade(green) in year 2017. Different colored points represent distribution of the samples’ weights. The grey points show the mean weights within each channel group (Side channel - 5.68, Pool - 9.3, and Cascade - 7.52), the error bars indicate the standard deviation of the data (Side channel - 8.27, Pool - 13.62, and Cascade - 9.03). Data: Andrews Forest LTER Site.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;2. Is there a significant difference in mean weights for Pacific giant salamanders observed in Pool vs. Cascade vs. Side Channel in 2017?&lt;/strong&gt;&lt;/p&gt;
+&lt;strong&gt;&lt;em&gt;Table. 2&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;The summary table for different channel classifications of mean weights in Pacific giant salamanders. Data: Andrews Forest LTER Site.&lt;/em&gt;
+&lt;table class=&#34;table table-striped&#34; style=&#34;width: auto !important; margin-left: auto; margin-right: auto;&#34;&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th style=&#34;border-bottom:hidden; padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; &#34; colspan=&#34;6&#34;&gt;
+&lt;div style=&#34;border-bottom: 1px solid #ddd; padding-bottom: 5px; &#34;&gt;
+Summary table of weights (g) in channels
+&lt;/div&gt;
+&lt;/th&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;th style=&#34;text-align:center;&#34;&gt;
+Channel
+&lt;/th&gt;
+&lt;th style=&#34;text-align:center;&#34;&gt;
+Mean
+&lt;/th&gt;
+&lt;th style=&#34;text-align:center;&#34;&gt;
+Standard Deviation
+&lt;/th&gt;
+&lt;th style=&#34;text-align:center;&#34;&gt;
+Standard Error
+&lt;/th&gt;
+&lt;th style=&#34;text-align:center;&#34;&gt;
+Variance
+&lt;/th&gt;
+&lt;th style=&#34;text-align:center;&#34;&gt;
+Sample Size
+&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:center;&#34;&gt;
+Cascade
+&lt;/td&gt;
+&lt;td style=&#34;text-align:center;&#34;&gt;
+7.52
+&lt;/td&gt;
+&lt;td style=&#34;text-align:center;&#34;&gt;
+9.03
+&lt;/td&gt;
+&lt;td style=&#34;text-align:center;&#34;&gt;
+0.43
+&lt;/td&gt;
+&lt;td style=&#34;text-align:center;&#34;&gt;
+81.50
+&lt;/td&gt;
+&lt;td style=&#34;text-align:center;&#34;&gt;
+448
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:center;&#34;&gt;
+Pool
+&lt;/td&gt;
+&lt;td style=&#34;text-align:center;&#34;&gt;
+9.30
+&lt;/td&gt;
+&lt;td style=&#34;text-align:center;&#34;&gt;
+13.62
+&lt;/td&gt;
+&lt;td style=&#34;text-align:center;&#34;&gt;
+1.56
+&lt;/td&gt;
+&lt;td style=&#34;text-align:center;&#34;&gt;
+185.58
+&lt;/td&gt;
+&lt;td style=&#34;text-align:center;&#34;&gt;
+76
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:center;&#34;&gt;
+Side Channel
+&lt;/td&gt;
+&lt;td style=&#34;text-align:center;&#34;&gt;
+5.68
+&lt;/td&gt;
+&lt;td style=&#34;text-align:center;&#34;&gt;
+8.27
+&lt;/td&gt;
+&lt;td style=&#34;text-align:center;&#34;&gt;
+0.65
+&lt;/td&gt;
+&lt;td style=&#34;text-align:center;&#34;&gt;
+68.31
+&lt;/td&gt;
+&lt;td style=&#34;text-align:center;&#34;&gt;
+164
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;We adopted the one-way analysis of variance (ANOVA) to solve that problem.&lt;/p&gt;
+&lt;p&gt;This method is suitable because the data satisfies all assumptions for ANOVA:&lt;/p&gt;
+&lt;ol style=&#34;list-style-type: lower-alpha&#34;&gt;
+&lt;li&gt;&lt;p&gt;The sample distribution should be normal. Through the beeswarm plot we could observe that most weights were concentrated at 0-6g. The data was presented as skewed to the left side. However, the sample sizes within each groups (Pool - 76, Cascade - 448, and Side channel - 164) are all more than 30, which could be considered as large enough. So the distributions of the sample statistics (mean, median) will be normally distributed.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Samples are independent. Due to the different locations of these three channels, the sample data collected from different places should be independent.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Population variances are equal. In the summary table (Table. 2), notice that the largest variance (Pool - 185.58) is less than the four times of the smallest variance (Side Channel - 68.31), which means the variances are close enough. Besides, based on the results from Levene’s Test (Levene’s F(2) = 2.39, &lt;em&gt;p&lt;/em&gt; = 0.093 &amp;gt; 0.05), there is no significant difference in variances between groups.&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;In 2017, mean weight of Pacific giant salamanders (g) measured in Cascade area (7.52 &lt;span class=&#34;math inline&#34;&gt;\(\pm\)&lt;/span&gt; 9.03, n = 448)，in Pool area (9.3 &lt;span class=&#34;math inline&#34;&gt;\(\pm\)&lt;/span&gt; 13.62, n = 76), and in Side Channel area (5.68 &lt;span class=&#34;math inline&#34;&gt;\(\pm\)&lt;/span&gt; 8.27, n = 164) have significant difference in at least two groups from the average salamander weight by a one-way ANOVA (F(2, 684) = 4.22, &lt;em&gt;p&lt;/em&gt;(0.015) &amp;lt; 0.05). Histogram presented in Figure.5.&lt;/p&gt;
+&lt;p&gt;To further study which groups differ significantly with each other, we analyzed with Tukey’s test for Honestly Significant Differences (Tukey’s HSD).
+The results showed that there is no significant difference between Pool and Cascade groups (&lt;em&gt;p adj&lt;/em&gt;(0.286) &amp;gt; 0.05), and between Side Channel and Cascade groups (&lt;em&gt;p adj&lt;/em&gt;(0.084) &amp;gt; 0.05), but the mean salamander weight differed significantly between Side Channel and Pool (&lt;em&gt;p adj&lt;/em&gt;(0.017) &amp;lt; 0.05). However, the difference in mean weight between the Side Channel and Pool groups is 3.62 g, with a small effect size (Cohen’s d = 0.35). Though the two groups show difference in data, it is highly possible that it happened because of accidental errors. Therefore, more research needs to be done to determine whether the two groups are actually different significantly.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;3. Limits about comparing means across the groups.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Mean is a measurement that is easily swayed by outliers, and it looks like the data has significant outliers. It may be more beneficial to also compare medians as well to make sure that outliers aren’t affecting the accuracy of our results. This could be done through rank-based tests.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&#34;summary&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Summary&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;Channel locations and sampling forest sections are independent (Table. 1).&lt;/li&gt;
+&lt;li&gt;The mean weight of salamanders in old growth and clear cut sections of the forest were not significantly different in 2017 (Figure. 4).&lt;/li&gt;
+&lt;li&gt;Within the three channels, the mean salamander weight differed significantly between Side Channel and Pool, but not with other groups (Figure. 5).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;div id=&#34;references&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;References&lt;/h3&gt;
+&lt;p&gt;Gregory S. V. 2016. Aquatic Vertebrate Population Study in Mack Creek, Andrews Experimental Forest, 1987 to present. Environmental Data Initiative. &lt;a href=&#34;https://doi.org/10.6073/pasta/5de64af9c11579266ef20da2ff32f702&#34; class=&#34;uri&#34;&gt;https://doi.org/10.6073/pasta/5de64af9c11579266ef20da2ff32f702&lt;/a&gt;. Data set accessed 12/03/19.&lt;/p&gt;
 &lt;/div&gt;
 </description>
     </item>
@@ -494,266 +884,10 @@ ggplot(data = lob_tdata, aes(x = size_mm, fill = year, color = year)) +
     
     <item>
       <title>Green Footprint</title>
-      <link>/project/external-project/</link>
+      <link>/project/green-footprint/</link>
       <pubDate>Wed, 27 Apr 2016 00:00:00 +0000</pubDate>
-      <guid>/project/external-project/</guid>
+      <guid>/project/green-footprint/</guid>
       <description></description>
-    </item>
-    
-    <item>
-      <title>Internal Project</title>
-      <link>/project/internal-project/</link>
-      <pubDate>Wed, 27 Apr 2016 00:00:00 +0000</pubDate>
-      <guid>/project/internal-project/</guid>
-      <description>&lt;p&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis posuere tellus ac convallis placerat. Proin tincidunt magna sed ex sollicitudin condimentum. Sed ac faucibus dolor, scelerisque sollicitudin nisi. Cras purus urna, suscipit quis sapien eu, pulvinar tempor diam. Quisque risus orci, mollis id ante sit amet, gravida egestas nisl. Sed ac tempus magna. Proin in dui enim. Donec condimentum, sem id dapibus fringilla, tellus enim condimentum arcu, nec volutpat est felis vel metus. Vestibulum sit amet erat at nulla eleifend gravida.&lt;/p&gt;
-&lt;p&gt;Nullam vel molestie justo. Curabitur vitae efficitur leo. In hac habitasse platea dictumst. Sed pulvinar mauris dui, eget varius purus congue ac. Nulla euismod, lorem vel elementum dapibus, nunc justo porta mi, sed tempus est est vel tellus. Nam et enim eleifend, laoreet sem sit amet, elementum sem. Morbi ut leo congue, maximus velit ut, finibus arcu. In et libero cursus, rutrum risus non, molestie leo. Nullam congue quam et volutpat malesuada. Sed risus tortor, pulvinar et dictum nec, sodales non mi. Phasellus lacinia commodo laoreet. Nam mollis, erat in feugiat consectetur, purus eros egestas tellus, in auctor urna odio at nibh. Mauris imperdiet nisi ac magna convallis, at rhoncus ligula cursus.&lt;/p&gt;
-&lt;p&gt;Cras aliquam rhoncus ipsum, in hendrerit nunc mattis vitae. Duis vitae efficitur metus, ac tempus leo. Cras nec fringilla lacus. Quisque sit amet risus at ipsum pharetra commodo. Sed aliquam mauris at consequat eleifend. Praesent porta, augue sed viverra bibendum, neque ante euismod ante, in vehicula justo lorem ac eros. Suspendisse augue libero, venenatis eget tincidunt ut, malesuada at lorem. Donec vitae bibendum arcu. Aenean maximus nulla non pretium iaculis. Quisque imperdiet, nulla in pulvinar aliquet, velit quam ultrices quam, sit amet fringilla leo sem vel nunc. Mauris in lacinia lacus.&lt;/p&gt;
-&lt;p&gt;Suspendisse a tincidunt lacus. Curabitur at urna sagittis, dictum ante sit amet, euismod magna. Sed rutrum massa id tortor commodo, vitae elementum turpis tempus. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean purus turpis, venenatis a ullamcorper nec, tincidunt et massa. Integer posuere quam rutrum arcu vehicula imperdiet. Mauris ullamcorper quam vitae purus congue, quis euismod magna eleifend. Vestibulum semper vel augue eget tincidunt. Fusce eget justo sodales, dapibus odio eu, ultrices lorem. Duis condimentum lorem id eros commodo, in facilisis mauris scelerisque. Morbi sed auctor leo. Nullam volutpat a lacus quis pharetra. Nulla congue rutrum magna a ornare.&lt;/p&gt;
-&lt;p&gt;Aliquam in turpis accumsan, malesuada nibh ut, hendrerit justo. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Quisque sed erat nec justo posuere suscipit. Donec ut efficitur arcu, in malesuada neque. Nunc dignissim nisl massa, id vulputate nunc pretium nec. Quisque eget urna in risus suscipit ultricies. Pellentesque odio odio, tincidunt in eleifend sed, posuere a diam. Nam gravida nisl convallis semper elementum. Morbi vitae felis faucibus, vulputate orci placerat, aliquet nisi. Aliquam erat volutpat. Maecenas sagittis pulvinar purus, sed porta quam laoreet at.&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
-      <title></title>
-      <link>/project/kai/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>/project/kai/</guid>
-      <description>
-&lt;script src=&#34;/rmarkdown-libs/kePrint/kePrint.js&#34;&gt;&lt;/script&gt;
-
-
-&lt;div id=&#34;pacific-giant-salamanders-in-mack-creek-abundance-and-weight-with-forest-sections-and-channel-types&#34; class=&#34;section level1&#34;&gt;
-&lt;h1&gt;Pacific giant salamanders in Mack Creek: abundance and weight with forest sections and channel types&lt;/h1&gt;
-&lt;div id=&#34;a-report-for-esm-206-statistics-and-data-analysis-in-environmental-science-and-management&#34; class=&#34;section level4&#34;&gt;
-&lt;h4&gt;A report for ESM 206: Statistics and Data Analysis in Environmental Science and Management&lt;/h4&gt;
-&lt;/div&gt;
-&lt;div id=&#34;ruoyu-wang-haley-grant&#34; class=&#34;section level4&#34;&gt;
-&lt;h4&gt;Ruoyu Wang &amp;amp; Haley Grant&lt;/h4&gt;
-&lt;/div&gt;
-&lt;div id=&#34;section&#34; class=&#34;section level4&#34;&gt;
-&lt;h4&gt;11/22/2019&lt;/h4&gt;
-&lt;/div&gt;
-&lt;div id=&#34;introduction&#34; class=&#34;section level3&#34;&gt;
-&lt;h3&gt;Introduction&lt;/h3&gt;
-&lt;p&gt;Around 1963, sections of forests near Mack Creek, Oregon were clear cut, meaning the trees were uniformly cut down (Gregory 2016). In 1993, Stanley V. Gregory and researchers at the Andrews Forest LTER Site began including Pacific giant salamanders (Dicamptodon tenebrosus) in their study called &lt;em&gt;Aquatic Vertebrate Population Study in Mack Creek, Andrews Experimental Forest, 1987 to present.&lt;/em&gt; The researchers recorded the weights of salamanders (g) and documented their locations within the area. The two forest sections of Mack Creek include clear cut sections as well as 500-year-old coniferous old growth forests (Gregory 2016). Within the two sections of forests, salamanders are found in Cascade, Pool and Side Channel. This report does not include salamanders found in Isolated Pool, as these areas are separated from the creek. Studying the Pacific giant salamander population in this area is relevant to understanding how new forests- the result of clear cutting- affect local wildlife populations, and how these effects compare to populations living in old growth forests.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;Dicamptodon_tenebrosus_2.JPG&#34; width=&#34;60%&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;&lt;em&gt;Figure. 1&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;Pacific giant salamander (Dicamptodon tenebrosus). Credit: Jeffrey Marsten. &lt;a href=&#34;https://commons.wikimedia.org/wiki/File:Dicamptodon_tenebrosus_2.JPG&#34;&gt;Wikipedia&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
-&lt;/div&gt;
-&lt;div id=&#34;data-and-methods&#34; class=&#34;section level3&#34;&gt;
-&lt;h3&gt;Data and Methods&lt;/h3&gt;
-&lt;p&gt;The &lt;a href=&#34;https://portal.lternet.edu/nis/mapbrowse?packageid=knb-lter-and.4027.12&#34;&gt;data set&lt;/a&gt; used in this report was provided by the LTER Network Data Portal, and full metadata can be found &lt;a href=&#34;https://portal.lternet.edu/nis/metadataviewer?packageid=knb-lter-and.4027.12&#34;&gt;here&lt;/a&gt;. Sections of the forest are specified as clear cut (“CC”) and old growth (“OG”), while channel types are specified as Cascade, “C”, Pool, “P”, and Side Channel, “SC”. A Chi-squared (&lt;span class=&#34;math inline&#34;&gt;\(\chi\)&lt;/span&gt;&lt;sup&gt;2&lt;/sup&gt;) test was performed to determine if forest section was related to which channel type salamanders were found. Additionally, an unpaired two-sample t-test was used to find out if the weights of salamanders differed significantly between the two forest sections. Finally, a one-way ANOVA test was conducted to determine if there was a significant difference in mean salamander weight among the three channel types between the two forest sections. All analyses and figures were made using R Studio version 1.2.5001.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;mack_creek_map_3.png&#34; width=&#34;60%&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;&lt;em&gt;Figure. 2&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;Map of Oregon. The location of Mack Creek is designated by the red icon. Courtesy of &lt;a href=&#34;https://www.google.com/maps/place/44°13&amp;#39;17.3%22N+122°10&amp;#39;04.8%22W/@44.8758978,-124.1058318,7.57z/data=!4m5!3m4!1s0x0:0x0!8m2!3d44.2214667!4d-122.168!5m1!1e4?hl=en-US&#34;&gt;Google Maps&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
-&lt;/div&gt;
-&lt;div id=&#34;results&#34; class=&#34;section level3&#34;&gt;
-&lt;h3&gt;Results&lt;/h3&gt;
-&lt;div id=&#34;a.-annual-salamander-population-in-two-forest-sections-of-mack-creek.&#34; class=&#34;section level4&#34;&gt;
-&lt;h4&gt;A. Annual salamander population in two forest sections of Mack Creek.&lt;/h4&gt;
-&lt;p&gt;Counts in clear cut forests tended to be less than counts in old growth forests until 2012.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;/project/kai/index_files/figure-html/sections_line_graph-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;
-&lt;strong&gt;&lt;em&gt;Figure. 3&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;Annual counts of salamanders in Mack Creek from 1993 to 2017. Clear cut forests were shown as orange dotted line, the old growth forests were presented as blue line with triangles. Data: Andrews Forest LTER Site.&lt;/em&gt;&lt;/p&gt;
-&lt;/div&gt;
-&lt;div id=&#34;b.-salamander-abundance-by-channel-classification-and-forest-sections-in-2017.&#34; class=&#34;section level4&#34;&gt;
-&lt;h4&gt;B. Salamander abundance by channel classification and forest sections in 2017.&lt;/h4&gt;
-&lt;p&gt;&lt;strong&gt;&lt;em&gt;Table. 1&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;Summary table of 2017 salamander population by channel classifications (Pool, Cascade and Side Channel) in old growth (OG) and clear cut (CC) sections of Mack Creek. Data: Andrews Forest LTER Site.&lt;/em&gt;&lt;/p&gt;
-&lt;table class=&#34;table table-striped&#34; style=&#34;width: auto !important; margin-left: auto; margin-right: auto;&#34;&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th style=&#34;border-bottom:hidden; padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; &#34; colspan=&#34;4&#34;&gt;
-&lt;div style=&#34;border-bottom: 1px solid #ddd; padding-bottom: 5px; &#34;&gt;
-Salamander counts by channel and sections classification in 2017
-&lt;/div&gt;
-&lt;/th&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;th style=&#34;text-align:center;&#34;&gt;
-Section
-&lt;/th&gt;
-&lt;th style=&#34;text-align:center;&#34;&gt;
-Cascade
-&lt;/th&gt;
-&lt;th style=&#34;text-align:center;&#34;&gt;
-Pool
-&lt;/th&gt;
-&lt;th style=&#34;text-align:center;&#34;&gt;
-Side Channel
-&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:center;&#34;&gt;
-Clear Cut
-&lt;/td&gt;
-&lt;td style=&#34;text-align:center;&#34;&gt;
-247 (55%)
-&lt;/td&gt;
-&lt;td style=&#34;text-align:center;&#34;&gt;
-31 (41%)
-&lt;/td&gt;
-&lt;td style=&#34;text-align:center;&#34;&gt;
-90 (55%)
-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:center;&#34;&gt;
-Old Growth
-&lt;/td&gt;
-&lt;td style=&#34;text-align:center;&#34;&gt;
-201 (45%)
-&lt;/td&gt;
-&lt;td style=&#34;text-align:center;&#34;&gt;
-45 (59%)
-&lt;/td&gt;
-&lt;td style=&#34;text-align:center;&#34;&gt;
-74 (45%)
-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;The percentages show the proportions of salamanders in each channel type by section. For example, of the salamanders found in the cascade channel type, 55% were located in clear cut sections, while 45% were located in old growth sections.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div id=&#34;c.-association-between-channel-classifications-and-forest-sections-on-mean-salamander-weights.&#34; class=&#34;section level4&#34;&gt;
-&lt;h4&gt;C. Association between channel classifications and forest sections on mean salamander weights.&lt;/h4&gt;
-&lt;p&gt;Is there a significant difference in where in the channel Pacific giant salamanders are located (pool, cascade or side channel) between the two sections (old growth and clear cut)?&lt;/p&gt;
-&lt;p&gt;Looking into the Table.1, we could find that the percentages difference of two different sections within the same channel are relatively small, and all the percentages are close to 50%. It is possible that there is no connections between the sections and the channels to the weights of salamanders.&lt;/p&gt;
-&lt;p&gt;We use Chi-Square (&lt;span class=&#34;math inline&#34;&gt;\(\chi\)&lt;/span&gt;&lt;sup&gt;2&lt;/sup&gt;) test to compare proportions and find their inner relationship.&lt;/p&gt;
-&lt;p&gt;The Chi-Square (&lt;span class=&#34;math inline&#34;&gt;\(\chi\)&lt;/span&gt;&lt;sup&gt;2&lt;/sup&gt;) test results indicate that the proportions of salamanders in each section and channel type are to be expected if forest section is not a determining factor in where salamanders were located in Mack Creek. In other words, there was no significant difference in forest section (clear cut / old growth) based on which channel type salamanders were found (&lt;span class=&#34;math inline&#34;&gt;\(\chi\)&lt;/span&gt;&lt;sup&gt;2&lt;/sup&gt;(2) = 5.54, &lt;em&gt;p&lt;/em&gt; (0.063) &amp;gt; 0.05).&lt;/p&gt;
-&lt;/div&gt;
-&lt;div id=&#34;d.-the-influence-of-forest-sections-on-pacific-giant-salamander-weights.&#34; class=&#34;section level4&#34;&gt;
-&lt;h4&gt;D. The influence of forest sections on Pacific giant salamander weights.&lt;/h4&gt;
-&lt;p&gt;&lt;img src=&#34;/project/kai/index_files/figure-html/d_ttest_graph-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;
-&lt;strong&gt;&lt;em&gt;Figure. 4&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;Counts of salamanders by weight for old growth and clear cut forest sections in 2017. The orange dotted line indicates mean salamander weight for clear cut sections, while the blue dotted line indicates mean salamander weight for old growth sections. The means appear relatively close together. Data: Andrews Forest LTER Site.&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;In year 2017, mean weight of Pacific giant salamanders (g) measured in clear cut forests (7.78 &lt;span class=&#34;math inline&#34;&gt;\(\pm\)&lt;/span&gt; 9.9, n = 368) was not significantly different from the average salamander weight in old growth forest areas (6.58 &lt;span class=&#34;math inline&#34;&gt;\(\pm\)&lt;/span&gt; 8.96, n = 328) by a unpaired two-sample t-test (t(692.79) = 1.67, &lt;em&gt;p&lt;/em&gt;(0.096) &amp;gt; 0.05) . The difference in mean weight between the two groups is 1.20 g, with a negligible effect size (Cohen’s d = 0.13). Therefore, we consider the salamander weights in clear cut areas were not significantly different from old growth ones. Histogram was presented in Figure.4.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div id=&#34;e.-the-influence-of-channel-classifications-on-pacific-giant-salamanders-weights.&#34; class=&#34;section level4&#34;&gt;
-&lt;h4&gt;E. The influence of channel classifications on Pacific giant salamanders weights.&lt;/h4&gt;
-&lt;p&gt;&lt;strong&gt;1. Visually compare Pacific giant salamander weights between the three channel classifications.&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;/project/kai/index_files/figure-html/e_channel_beeswarm-1.png&#34; width=&#34;672&#34; style=&#34;display: block; margin: auto;&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;&lt;em&gt;Figure. 5&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;The weight distribution, mean, and standard deviation graph of Pacific giant salamanders in channels- Pool(blue), Side Channel(pink), Cascade(green) in year 2017. Different colored points represent distribution of the samples’ weights. The grey points show the mean weights within each channel group (Side channel - 5.68, Pool - 9.3, and Cascade - 7.52), the error bars indicate the standard deviation of the data (Side channel - 8.27, Pool - 13.62, and Cascade - 9.03). Data: Andrews Forest LTER Site.&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;2. Is there a significant difference in mean weights for Pacific giant salamanders observed in Pool vs. Cascade vs. Side Channel in 2017?&lt;/strong&gt;&lt;/p&gt;
-&lt;strong&gt;&lt;em&gt;Table. 2&lt;/em&gt;&lt;/strong&gt; &lt;em&gt;The summary table for different channel classifications of mean weights in Pacific giant salamanders. Data: Andrews Forest LTER Site.&lt;/em&gt;
-&lt;table class=&#34;table table-striped&#34; style=&#34;width: auto !important; margin-left: auto; margin-right: auto;&#34;&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th style=&#34;border-bottom:hidden; padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; &#34; colspan=&#34;6&#34;&gt;
-&lt;div style=&#34;border-bottom: 1px solid #ddd; padding-bottom: 5px; &#34;&gt;
-Summary table of weights (g) in channels
-&lt;/div&gt;
-&lt;/th&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;th style=&#34;text-align:center;&#34;&gt;
-Channel
-&lt;/th&gt;
-&lt;th style=&#34;text-align:center;&#34;&gt;
-Mean
-&lt;/th&gt;
-&lt;th style=&#34;text-align:center;&#34;&gt;
-Standard Deviation
-&lt;/th&gt;
-&lt;th style=&#34;text-align:center;&#34;&gt;
-Standard Error
-&lt;/th&gt;
-&lt;th style=&#34;text-align:center;&#34;&gt;
-Variance
-&lt;/th&gt;
-&lt;th style=&#34;text-align:center;&#34;&gt;
-Sample Size
-&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:center;&#34;&gt;
-Cascade
-&lt;/td&gt;
-&lt;td style=&#34;text-align:center;&#34;&gt;
-7.52
-&lt;/td&gt;
-&lt;td style=&#34;text-align:center;&#34;&gt;
-9.03
-&lt;/td&gt;
-&lt;td style=&#34;text-align:center;&#34;&gt;
-0.43
-&lt;/td&gt;
-&lt;td style=&#34;text-align:center;&#34;&gt;
-81.50
-&lt;/td&gt;
-&lt;td style=&#34;text-align:center;&#34;&gt;
-448
-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:center;&#34;&gt;
-Pool
-&lt;/td&gt;
-&lt;td style=&#34;text-align:center;&#34;&gt;
-9.30
-&lt;/td&gt;
-&lt;td style=&#34;text-align:center;&#34;&gt;
-13.62
-&lt;/td&gt;
-&lt;td style=&#34;text-align:center;&#34;&gt;
-1.56
-&lt;/td&gt;
-&lt;td style=&#34;text-align:center;&#34;&gt;
-185.58
-&lt;/td&gt;
-&lt;td style=&#34;text-align:center;&#34;&gt;
-76
-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:center;&#34;&gt;
-Side Channel
-&lt;/td&gt;
-&lt;td style=&#34;text-align:center;&#34;&gt;
-5.68
-&lt;/td&gt;
-&lt;td style=&#34;text-align:center;&#34;&gt;
-8.27
-&lt;/td&gt;
-&lt;td style=&#34;text-align:center;&#34;&gt;
-0.65
-&lt;/td&gt;
-&lt;td style=&#34;text-align:center;&#34;&gt;
-68.31
-&lt;/td&gt;
-&lt;td style=&#34;text-align:center;&#34;&gt;
-164
-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;We adopted the one-way analysis of variance (ANOVA) to solve that problem.&lt;/p&gt;
-&lt;p&gt;This method is suitable because the data satisfies all assumptions for ANOVA:&lt;/p&gt;
-&lt;ol style=&#34;list-style-type: lower-alpha&#34;&gt;
-&lt;li&gt;&lt;p&gt;The sample distribution should be normal. Through the beeswarm plot we could observe that most weights were concentrated at 0-6g. The data was presented as skewed to the left side. However, the sample sizes within each groups (Pool - 76, Cascade - 448, and Side channel - 164) are all more than 30, which could be considered as large enough. So the distributions of the sample statistics (mean, median) will be normally distributed.&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Samples are independent. Due to the different locations of these three channels, the sample data collected from different places should be independent.&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Population variances are equal. In the summary table (Table. 2), notice that the largest variance (Pool - 185.58) is less than the four times of the smallest variance (Side Channel - 68.31), which means the variances are close enough. Besides, based on the results from Levene’s Test (Levene’s F(2) = 2.39, &lt;em&gt;p&lt;/em&gt; = 0.093 &amp;gt; 0.05), there is no significant difference in variances between groups.&lt;/p&gt;&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;In 2017, mean weight of Pacific giant salamanders (g) measured in Cascade area (7.52 &lt;span class=&#34;math inline&#34;&gt;\(\pm\)&lt;/span&gt; 9.03, n = 448)，in Pool area (9.3 &lt;span class=&#34;math inline&#34;&gt;\(\pm\)&lt;/span&gt; 13.62, n = 76), and in Side Channel area (5.68 &lt;span class=&#34;math inline&#34;&gt;\(\pm\)&lt;/span&gt; 8.27, n = 164) have significant difference in at least two groups from the average salamander weight by a one-way ANOVA (F(2, 684) = 4.22, &lt;em&gt;p&lt;/em&gt;(0.015) &amp;lt; 0.05). Histogram presented in Figure.5.&lt;/p&gt;
-&lt;p&gt;To further study which groups differ significantly with each other, we analyzed with Tukey’s test for Honestly Significant Differences (Tukey’s HSD).
-The results showed that there is no significant difference between Pool and Cascade groups (&lt;em&gt;p adj&lt;/em&gt;(0.286) &amp;gt; 0.05), and between Side Channel and Cascade groups (&lt;em&gt;p adj&lt;/em&gt;(0.084) &amp;gt; 0.05), but the mean salamander weight differed significantly between Side Channel and Pool (&lt;em&gt;p adj&lt;/em&gt;(0.017) &amp;lt; 0.05). However, the difference in mean weight between the Side Channel and Pool groups is 3.62 g, with a small effect size (Cohen’s d = 0.35). Though the two groups show difference in data, it is highly possible that it happened because of accidental errors. Therefore, more research needs to be done to determine whether the two groups are actually different significantly.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;3. Limits about comparing means across the groups.&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;Mean is a measurement that is easily swayed by outliers, and it looks like the data has significant outliers. It may be more beneficial to also compare medians as well to make sure that outliers aren’t affecting the accuracy of our results. This could be done through rank-based tests.&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id=&#34;summary&#34; class=&#34;section level3&#34;&gt;
-&lt;h3&gt;Summary&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;Channel locations and sampling forest sections are independent (Table. 1).&lt;/li&gt;
-&lt;li&gt;The mean weight of salamanders in old growth and clear cut sections of the forest were not significantly different in 2017 (Figure. 4).&lt;/li&gt;
-&lt;li&gt;Within the three channels, the mean salamander weight differed significantly between Side Channel and Pool, but not with other groups (Figure. 5).&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;
-&lt;div id=&#34;references&#34; class=&#34;section level3&#34;&gt;
-&lt;h3&gt;References&lt;/h3&gt;
-&lt;p&gt;Gregory S. V. 2016. Aquatic Vertebrate Population Study in Mack Creek, Andrews Experimental Forest, 1987 to present. Environmental Data Initiative. &lt;a href=&#34;https://doi.org/10.6073/pasta/5de64af9c11579266ef20da2ff32f702&#34; class=&#34;uri&#34;&gt;https://doi.org/10.6073/pasta/5de64af9c11579266ef20da2ff32f702&lt;/a&gt;. Data set accessed 12/03/19.&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-</description>
     </item>
     
   </channel>

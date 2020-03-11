@@ -1,0 +1,182 @@
+---
+title: "Text Mining with Slient Spring"
+author: "Ruoyu Wang"
+# date: '2020-03-08'
+categories: []
+tags:
+  - R
+  - Text Mining
+summary: "In this report, we will analysis and visualize authors' sediments underneath the plain texts with R."
+lastmod: '2020-03-08T15:05:12-08:00'
+featured: no
+image:
+  caption: 'Slient Spring on [PBA Galleries](https://www.pbagalleries.com/view-auctions/catalog/id/57/lot/13930/Silent-Spring)'
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+
+
+<div id="data-preparation" class="section level3">
+<h3>1. Data preparation</h3>
+<pre class="r"><code># Store the original pdf file
+silent_spring &lt;- &quot;silent_spring.pdf&quot;
+
+# Read in the pdf
+sil_spr_text &lt;- pdftools::pdf_text(silent_spring)
+# Each page goes into one row</code></pre>
+<p>Through <code>sil_spr_text</code>, we can see that the line breakers are <code>\n</code> comparing to the original text.</p>
+<p>Next, we will split the pages into lines in the cells.</p>
+<pre class="r"><code>sil_spr_df &lt;- data.frame(sil_spr_text) %&gt;% 
+  dplyr::mutate(text_full = stringr::str_split(sil_spr_text, 
+                                               pattern = &quot;\\n&quot;)) %&gt;% 
+  # Now each line is in the group of each page
+  unnest(text_full) %&gt;% 
+  mutate(text_full = stringr::str_trim(text_full)) 
+  # remove extra white spaces at the beginning</code></pre>
+<p>Now, put each word into its own cell.</p>
+<pre class="r"><code>sil_spr_tokens &lt;- sil_spr_df %&gt;% 
+  dplyr::select(-sil_spr_text) %&gt;% # only keep the line column
+  unnest_tokens(word, text_full) # the new column is &quot;word&quot;</code></pre>
+<p>Notice that there are lots of meaningless words and numbers, we can remove the stop words and numeric pieces:</p>
+<pre class="r"><code>sil_spr_stop &lt;- sil_spr_tokens %&gt;% 
+  anti_join(stop_words) 
+  # find and remove all the same words in the stop word list
+
+sil_spr_nonum &lt;- sil_spr_stop %&gt;% 
+  dplyr::filter(is.na(as.numeric(word)))
+  # filter out all the numbers</code></pre>
+</div>
+<div id="word-frenqucy-visualization" class="section level3">
+<h3>2. Word frenqucy visualization</h3>
+<ul>
+<li>What (non-stop) words are most common in the document?</li>
+</ul>
+<p>Word cloud</p>
+<pre class="r"><code># Count the occurences of words
+sil_spr_n &lt;- sil_spr_nonum %&gt;% 
+  count(word) 
+
+# Make a nice wordcloud
+wordcloud(words = sil_spr_n$word, freq = sil_spr_n$n,
+          max.words = 200, random.order = FALSE,
+          rot.per=0.35, 
+          colors=brewer.pal(8, &quot;Dark2&quot;))</code></pre>
+<p><img src="/en/project/internal-project/index_files/figure-html/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>sil_spr_top20 &lt;- sil_spr_n %&gt;% 
+  arrange(-n) %&gt;% 
+  head(20)
+
+# Make a nice lolipop plot for the word occurence
+ggplot(data = sil_spr_top20, 
+       aes(x = reorder(word, n), y = n)) +
+  geom_point(aes(color = word), size = 2,
+             show.legend = FALSE) +
+  geom_segment(aes(x = word, xend = word,
+                   y = 0, yend = n,
+                   color = word),
+               show.legend = FALSE) +
+  labs(x = &quot;&quot;, y = &quot;Occurence of words&quot;)+
+  theme_minimal()+
+  coord_flip()</code></pre>
+<p><img src="/en/project/internal-project/index_files/figure-html/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="text-setimental-analysis" class="section level3">
+<h3>3. Text setimental analysis</h3>
+<p>How many words are associated with each sentiment?</p>
+<p>Ordinal sediments, ranked values on negative (-5) to positive (5) scale</p>
+<p>Binary method, either positive or negative</p>
+<p>Descriptive method, words in emotional bins</p>
+<p>binary method</p>
+<pre class="r"><code>ss_bing &lt;- sil_spr_nonum %&gt;% 
+  inner_join(get_sentiments(lexicon = &quot;bing&quot;))
+
+# Find counts by sentiments
+
+ss_bing_n &lt;- ss_bing %&gt;% 
+  count(sentiment, sort = TRUE) 
+
+ggplot(data = ss_bing_n)+
+  geom_col(aes(x = reorder(sentiment, -n), y = n,
+               fill = sentiment),
+           show.legend = FALSE,
+           width = 0.35)+
+  labs(x = &quot;Sediments&quot;, y = &quot;Counts&quot;)+
+  theme_minimal()</code></pre>
+<p><img src="/en/project/internal-project/index_files/figure-html/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>First, we search for words in the ordinal sediment data set:
+Polarity sentiment lexicons
+(ranked values on negative → positive scale) - “afinn”
+Polarity scores
+Most negative: -5
+Most positive: +5</p>
+<pre class="r"><code>sil_spr_afinn &lt;- sil_spr_nonum %&gt;% 
+  inner_join(get_sentiments(lexicon = &quot;afinn&quot;))
+
+# count the values of the sentiments
+sil_spr_afinn_hist &lt;- sil_spr_afinn %&gt;% 
+  count(value)
+
+ggplot(data = sil_spr_afinn_hist, aes(x = value, y = n))+
+  geom_col(aes(fill = value), show.legend = FALSE)+
+  labs(x = &quot;Sentimental score&quot;, y = &quot;Frequency&quot;)+
+  theme_minimal()</code></pre>
+<p><img src="/en/project/internal-project/index_files/figure-html/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>sil_spr_summary &lt;- sil_spr_afinn %&gt;% 
+  summarize(
+    mean_score = mean(value),
+    median_score = median(value)
+  )</code></pre>
+<pre class="r"><code>ss_afinn_n5 &lt;- sil_spr_afinn %&gt;% 
+  filter(! value == -5) %&gt;% 
+  count(word, value, sort = TRUE) %&gt;% 
+  group_by(value) %&gt;% 
+  top_n(5) %&gt;%  # col = n
+  ungroup()
+
+
+ggplot(data = ss_afinn_n5,
+                      aes(x = reorder(word, -n),
+                          y = n,
+                          fill = n))+
+  geom_col(show.legend = FALSE)+
+  facet_wrap(~value, ncol = 2, scales = &quot;free&quot;)+
+  labs(x = &quot;&quot;, y = &quot;Frequency&quot;)+
+  theme_minimal()</code></pre>
+<p><img src="/en/project/internal-project/index_files/figure-html/unnamed-chunk-10-1.png" width="864" style="display: block; margin: auto;" /></p>
+<p>Second, let’s test with emotional words method.
+The NRC Emotion Lexicon is a list of English words and their associations with eight basic emotions (anger, fear, anticipation, trust, surprise, sadness, joy, and disgust) and two sentiments (negative and positive</p>
+<pre class="r"><code>sil_spr_nrc &lt;- sil_spr_nonum %&gt;% 
+  inner_join(get_sentiments(lexicon = &quot;nrc&quot;))
+
+# Find counts by sentiments
+
+ss_nrc_n &lt;- sil_spr_nrc %&gt;% 
+  count(sentiment, sort = TRUE) 
+
+ggplot(data = ss_nrc_n)+
+  geom_col(aes(x = reorder(sentiment, -n), y = n,
+               fill = sentiment),
+           show.legend = FALSE)+
+  labs(x = &quot;Sediments&quot;, y = &quot;Counts&quot;)+
+  theme_minimal()</code></pre>
+<p><img src="/en/project/internal-project/index_files/figure-html/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>How do sentiment/top words compare for speeches/documents/etc. from two or more different groups, candidates, etc.?</p>
+<pre class="r"><code>ss_nrc_n5 &lt;- sil_spr_nrc %&gt;% 
+  count(word, sentiment, sort = TRUE) %&gt;% 
+  group_by(sentiment) %&gt;% 
+  top_n(5) %&gt;%  # col = n
+  ungroup()
+
+
+ggplot(data = ss_nrc_n5,
+                      aes(x = reorder(word, -n),
+                          y = n,
+                          fill = sentiment))+
+  geom_col(show.legend = FALSE)+
+  facet_wrap(~sentiment, ncol = 2, scales = &quot;free&quot;)+
+  labs(x = &quot;&quot;, y = &quot;Frequency&quot;)+
+  theme_minimal()</code></pre>
+<p><img src="/en/project/internal-project/index_files/figure-html/unnamed-chunk-12-1.png" width="768" style="display: block; margin: auto;" /></p>
+</div>

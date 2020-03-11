@@ -48,6 +48,96 @@
   </url>
   
   <url>
+    <loc>/project/</loc>
+    <lastmod>2020-03-08T15:05:12-08:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="zh"
+                href="/zh/project/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="/project/"
+                />
+  </url>
+  
+  <url>
+    <loc>/tags/r/</loc>
+    <lastmod>2020-03-08T15:05:12-08:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="zh"
+                href="/zh/tags/r/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="/tags/r/"
+                />
+  </url>
+  
+  <url>
+    <loc>/</loc>
+    <lastmod>2020-03-08T15:05:12-08:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="zh"
+                href="/zh/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="/"
+                />
+  </url>
+  
+  <url>
+    <loc>/tags/</loc>
+    <lastmod>2020-03-08T15:05:12-08:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="zh"
+                href="/zh/tags/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="/tags/"
+                />
+  </url>
+  
+  <url>
+    <loc>/tags/text-mining/</loc>
+    <lastmod>2020-03-08T15:05:12-08:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="zh"
+                href="/zh/tags/text-mining/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="/tags/text-mining/"
+                />
+  </url>
+  
+  <url>
+    <loc>/project/text-mining/</loc>
+    <lastmod>2020-03-08T15:05:12-08:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="zh"
+                href="/zh/project/text-mining/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="/project/text-mining/"
+                />
+  </url>
+  
+  <url>
     <loc>/authors/admin/</loc>
     <lastmod>2020-02-14T00:00:00+00:00</lastmod>
     <xhtml:link
@@ -108,36 +198,6 @@
   </url>
   
   <url>
-    <loc>/</loc>
-    <lastmod>2020-02-18T15:05:12-08:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="zh"
-                href="/zh/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="/"
-                />
-  </url>
-  
-  <url>
-    <loc>/tags/</loc>
-    <lastmod>2020-02-18T15:05:12-08:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="zh"
-                href="/zh/tags/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="/tags/"
-                />
-  </url>
-  
-  <url>
     <loc>/post/tsca/</loc>
     <lastmod>2020-02-14T00:00:00+00:00</lastmod>
     <xhtml:link
@@ -168,51 +228,6 @@
   </url>
   
   <url>
-    <loc>/project/my-new-project/</loc>
-    <lastmod>2020-01-09T15:05:12-08:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="zh"
-                href="/zh/project/my-new-project/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="/project/my-new-project/"
-                />
-  </url>
-  
-  <url>
-    <loc>/project/</loc>
-    <lastmod>2020-02-18T15:05:12-08:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="zh"
-                href="/zh/project/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="/project/"
-                />
-  </url>
-  
-  <url>
-    <loc>/tags/r/</loc>
-    <lastmod>2020-02-18T15:05:12-08:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="zh"
-                href="/zh/tags/r/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="/tags/r/"
-                />
-  </url>
-  
-  <url>
     <loc>/tags/time-series/</loc>
     <lastmod>2020-02-18T15:05:12-08:00</lastmod>
     <xhtml:link
@@ -239,6 +254,26 @@
                 rel="alternate"
                 hreflang="en"
                 href="/project/time-series/"
+                />
+  </url>
+  
+  <url>
+    <loc>/tags/statistics/</loc>
+    <lastmod>2019-11-22T15:05:12-08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/project/kai/</loc>
+    <lastmod>2019-11-22T15:05:12-08:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="zh"
+                href="/zh/project/kai/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="/project/kai/"
                 />
   </url>
   
@@ -393,21 +428,6 @@
   </url>
   
   <url>
-    <loc>/tags/deep-learning/</loc>
-    <lastmod>2016-04-27T00:00:00+00:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="zh"
-                href="/zh/tags/deep-learning/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="/tags/deep-learning/"
-                />
-  </url>
-  
-  <url>
     <loc>/tags/demo/</loc>
     <lastmod>2016-04-27T00:00:00+00:00</lastmod>
     <xhtml:link
@@ -423,46 +443,17 @@
   </url>
   
   <url>
-    <loc>/project/external-project/</loc>
+    <loc>/project/green-footprint/</loc>
     <lastmod>2016-04-27T00:00:00+00:00</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="zh"
-                href="/zh/project/external-project/"
+                href="/zh/project/green-footprint/"
                 />
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
-                href="/project/external-project/"
-                />
-  </url>
-  
-  <url>
-    <loc>/project/internal-project/</loc>
-    <lastmod>2016-04-27T00:00:00+00:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="zh"
-                href="/zh/project/internal-project/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="/project/internal-project/"
-                />
-  </url>
-  
-  <url>
-    <loc>/project/kai/</loc>
-    <xhtml:link
-                rel="alternate"
-                hreflang="zh"
-                href="/zh/project/kai/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="/project/kai/"
+                href="/project/green-footprint/"
                 />
   </url>
   

@@ -5,12 +5,28 @@
     <link>/zh/tags/</link>
       <atom:link href="/zh/tags/index.xml" rel="self" type="application/rss+xml" />
     <description>Tags</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>zh</language><copyright>2020</copyright><lastBuildDate>Fri, 14 Feb 2020 00:00:00 +0000</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>zh</language><copyright>2020</copyright><lastBuildDate>Sun, 08 Mar 2020 15:05:12 -0800</lastBuildDate>
     <image>
       <url>/images/icon_hu0b7a4cb9992c9ac0e91bd28ffd38dd00_9727_512x512_fill_lanczos_center_2.png</url>
       <title>Tags</title>
       <link>/zh/tags/</link>
     </image>
+    
+    <item>
+      <title>R</title>
+      <link>/zh/tags/r/</link>
+      <pubDate>Sun, 08 Mar 2020 15:05:12 -0800</pubDate>
+      <guid>/zh/tags/r/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Text Mining</title>
+      <link>/zh/tags/text-mining/</link>
+      <pubDate>Sun, 08 Mar 2020 15:05:12 -0800</pubDate>
+      <guid>/zh/tags/text-mining/</guid>
+      <description></description>
+    </item>
     
     <item>
       <title>Political Analysis</title>
@@ -25,14 +41,6 @@
       <link>/zh/tags/academic/</link>
       <pubDate>Thu, 09 Jan 2020 00:00:00 +0000</pubDate>
       <guid>/zh/tags/academic/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>R</title>
-      <link>/zh/tags/r/</link>
-      <pubDate>Thu, 09 Jan 2020 00:00:00 +0000</pubDate>
-      <guid>/zh/tags/r/</guid>
       <description></description>
     </item>
     
@@ -65,14 +73,6 @@
       <link>/zh/tags/sustainable-business/</link>
       <pubDate>Fri, 01 Nov 2019 00:00:00 +0000</pubDate>
       <guid>/zh/tags/sustainable-business/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Deep Learning</title>
-      <link>/zh/tags/deep-learning/</link>
-      <pubDate>Wed, 27 Apr 2016 00:00:00 +0000</pubDate>
-      <guid>/zh/tags/deep-learning/</guid>
       <description></description>
     </item>
     

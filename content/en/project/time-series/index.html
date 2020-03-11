@@ -1,6 +1,7 @@
 ---
 title: Time series exploration and visualization
-author: [Ruoyu Wang]
+author: 
+- admin
 date: '2020-01-09'
 slug: time-series
 categories: []
@@ -44,7 +45,7 @@ ggplot(data = steelhead_date, aes(x = date_new, y = value))+
   labs(x = &quot;Date&quot;, y = &quot;Adult passage number (fish/day)&quot;)+
   scale_color_paletteer_c(&quot;grDevices::rainbow&quot;)+
   theme_minimal()</code></pre>
-<p><img src="/project/time-series/index_files/figure-html/daily_figure-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p><img src="/en/project/time-series/index_files/figure-html/daily_figure-1.png" width="768" style="display: block; margin: auto;" /></p>
 <p><strong><em>Figure. 2</em></strong> <em>Daily adult steelhead passage through Bonneville Dam. Different colors represent different years. Data source: Data from: Columbia Basin Research Available here: <a href="http://www.cbr.washington.edu/dart/query/adult_graph_text">Adult fish passage</a>.</em></p>
 </div>
 <div id="b.-seasonplot-showing-monthly-passage-variation" class="section level5">
@@ -79,7 +80,7 @@ ggplot(data = steel_season, aes(x = month, y = monthly_total, group = year))+
   scale_color_paletteer_c(&quot;pals::kovesi.diverging_rainbow_bgymr_45_85_c67&quot;)+
   labs(x = &quot;&quot;, y = &quot;Monthly adult steelhead passage (fish/month)&quot;, color = &quot;Year&quot;)+
   theme_minimal()</code></pre>
-<p><img src="/project/time-series/index_files/figure-html/seasonal_plot-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p><img src="/en/project/time-series/index_files/figure-html/seasonal_plot-1.png" width="768" style="display: block; margin: auto;" /></p>
 <p><strong><em>Figure. 3</em></strong> <em>A seasonplot of adult steelhead passage across Bonneville Dam in different months for each year. The years present in different colors. From the past to the present, the color changes from blue to green, yellow and red. Data source: Data from: Columbia Basin Research Available here: <a href="http://www.cbr.washington.edu/dart/query/adult_graph_text">Adult fish passage</a>.</em></p>
 <p>We can see strong and consistent pattern of the monthly passage amount within one year. The annual peaks often occur in August. Summer to early fall (July to September) is the main migration season for steelhead in this area. Besides, the size of migration seemed to grow recently. Most monthly passage amounts after 2000 (lines in red color) were relatively higher than those before 2000 (lines in colors other than red), especially in peak months.</p>
 </div>
@@ -102,7 +103,7 @@ ggplot(data = steel_year, aes(x = year, y = year_total)) +
        y = &quot;Annual adult steelhead passage (fish/year)&quot;)+
   scale_x_continuous(breaks = c(1939, 1950, 1960, 1970, 1980, 1990, 2000, 2010, 2019))+
   theme_minimal()</code></pre>
-<p><img src="/project/time-series/index_files/figure-html/annual_plot-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p><img src="/en/project/time-series/index_files/figure-html/annual_plot-1.png" width="768" style="display: block; margin: auto;" /></p>
 <p><strong><em>Figure. 4</em></strong> <em>Annual amount plot shows the fluctuation of the migration amounts during 1939-2019. Each column indicates the annual passage amount in the specific year. Data source: Data from: Columbia Basin Research Available here: <a href="http://www.cbr.washington.edu/dart/query/adult_graph_text">Adult fish passage</a>.</em></p>
 <p>According to the Oregon Department of Fish &amp; Wildlife, fish protection facilities renovations were in 1957 and 1998. Because our data only includes adult fish passage, normally there would be a time lag between spawning and increasing whole population. In this annual plot, we could see a huge rise in 2001, which was three years later than the 1998 project. However, no visible improvement happened after the 1957 program.</p>
 </div>
@@ -118,7 +119,7 @@ components(dcmp) %&gt;% autoplot() +
        subtitle = &quot;Monthly passage = trend + season_year-month + remainder&quot;,
        x = &quot;Date (year-month)&quot;)+
   theme_minimal()</code></pre>
-<p><img src="/project/time-series/index_files/figure-html/unnamed-chunk-1-1.png" width="864" style="display: block; margin: auto;" /></p>
+<p><img src="/en/project/time-series/index_files/figure-html/unnamed-chunk-1-1.png" width="864" style="display: block; margin: auto;" /></p>
 <p><strong><em>Figure. 5</em></strong> <em>Decomposition of the time series passage data during 1939-2019. Data source: Data from: Columbia Basin Research Available here: <a href="http://www.cbr.washington.edu/dart/query/adult_graph_text">Adult fish passage</a>.</em></p>
 <p>From the original data, we could see strong seasonality, no clearly overall trend and cyclical trend. Considering the peak months are from July to August, we choose 3 as the window width. The trend in decomposition plot catches the changes in the original graph. The seasonal also contains the yearly peak feature. Additionally, the residuals seem relatively random.</p>
 <pre class="r"><code># Use the autocorrelation function (ACF) to further examine the seasonality
@@ -126,7 +127,7 @@ steel_ts %&gt;%
   ACF(monthly_total) %&gt;% 
   autoplot()+
   theme_minimal()</code></pre>
-<p><img src="/project/time-series/index_files/figure-html/acf-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="/en/project/time-series/index_files/figure-html/acf-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p><strong><em>Figure. 6</em></strong> <em>The autocorrelation function (ACF) of the time series passage data in 1939-2019. It shows the correlation of a time series data with itself. Data source: Columbia Basin Research Available here: <a href="http://www.cbr.washington.edu/dart/query/adult_graph_text">Adult fish passage</a>.</em></p>
 <p>We can observe strong seasonality in this data. For example, months 3-9 are positively correlated with each other. Positive correlation also happens in month 10-14. While these two group are negatively correlated.</p>
 </div>

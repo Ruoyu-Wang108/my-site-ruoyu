@@ -1,0 +1,241 @@
+---
+title: "Text Mining with Slient Spring"
+author: "Ruoyu Wang"
+# date: '2020-03-08'
+categories: []
+tags:
+  - R
+  - Text Mining
+summary: "In this report, we will analysis and visualize authors' sediments underneath the plain texts with R."
+lastmod: '2020-03-08T15:05:12-08:00'
+featured: no
+image:
+  caption: 'Slient Spring on [PBA Galleries](https://www.pbagalleries.com/view-auctions/catalog/id/57/lot/13930/Silent-Spring)'
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE,
+                      fig.align = "center")
+
+library(tidyverse)
+library(here)
+library(janitor)
+library(paletteer)
+library(gt)
+
+# for text mining
+library(pdftools)
+library(ggwordcloud)
+library(tidytext)
+library(textdata)
+library(wordcloud)
+library(RColorBrewer)
+```
+
+### 1. Data preparation
+
+```{r}
+# Store the original pdf file
+silent_spring <- "silent_spring.pdf"
+
+# Read in the pdf
+sil_spr_text <- pdftools::pdf_text(silent_spring)
+# Each page goes into one row
+```
+
+Through `sil_spr_text`, we can see that the line breakers are `\n` comparing to the original text.
+
+Next, we will split the pages into lines in the cells.
+
+```{r}
+sil_spr_df <- data.frame(sil_spr_text) %>% 
+  dplyr::mutate(text_full = stringr::str_split(sil_spr_text, 
+                                               pattern = "\\n")) %>% 
+  # Now each line is in the group of each page
+  unnest(text_full) %>% 
+  mutate(text_full = stringr::str_trim(text_full)) 
+  # remove extra white spaces at the beginning
+```
+
+Now, put each word into its own cell.
+
+```{r}
+sil_spr_tokens <- sil_spr_df %>% 
+  dplyr::select(-sil_spr_text) %>% # only keep the line column
+  unnest_tokens(word, text_full) # the new column is "word"
+```
+
+Notice that there are lots of meaningless words and numbers, we can remove the stop words and numeric pieces:
+
+```{r}
+sil_spr_stop <- sil_spr_tokens %>% 
+  anti_join(stop_words) 
+  # find and remove all the same words in the stop word list
+
+sil_spr_nonum <- sil_spr_stop %>% 
+  dplyr::filter(is.na(as.numeric(word)))
+  # filter out all the numbers
+```
+
+### 2. Word frenqucy visualization
+
+- What (non-stop) words are most common in the document?
+
+Word cloud
+```{r}
+# Count the occurences of words
+sil_spr_n <- sil_spr_nonum %>% 
+  count(word) 
+
+# Make a nice wordcloud
+wordcloud(words = sil_spr_n$word, freq = sil_spr_n$n,
+          max.words = 200, random.order = FALSE,
+          rot.per=0.35, 
+          colors=brewer.pal(8, "Dark2"))
+```
+
+```{r}
+sil_spr_top20 <- sil_spr_n %>% 
+  arrange(-n) %>% 
+  head(20)
+
+# Make a nice lolipop plot for the word occurence
+ggplot(data = sil_spr_top20, 
+       aes(x = reorder(word, n), y = n)) +
+  geom_point(aes(color = word), size = 2,
+             show.legend = FALSE) +
+  geom_segment(aes(x = word, xend = word,
+                   y = 0, yend = n,
+                   color = word),
+               show.legend = FALSE) +
+  labs(x = "", y = "Occurence of words")+
+  theme_minimal()+
+  coord_flip()
+
+```
+
+### 3. Text setimental analysis
+
+How many words are associated with each sentiment?
+
+Ordinal sediments, ranked values on negative (-5) to positive (5) scale
+
+Binary method, either positive or negative
+
+Descriptive method, words in emotional bins
+
+
+binary method
+```{r}
+ss_bing <- sil_spr_nonum %>% 
+  inner_join(get_sentiments(lexicon = "bing"))
+
+# Find counts by sentiments
+
+ss_bing_n <- ss_bing %>% 
+  count(sentiment, sort = TRUE) 
+
+ggplot(data = ss_bing_n)+
+  geom_col(aes(x = reorder(sentiment, -n), y = n,
+               fill = sentiment),
+           show.legend = FALSE,
+           width = 0.35)+
+  labs(x = "Sediments", y = "Counts")+
+  theme_minimal()
+```
+
+First, we search for words in the ordinal sediment data set:
+Polarity sentiment lexicons 
+(ranked values on negative → positive scale) - “afinn”
+Polarity scores
+Most negative: -5
+Most positive: +5
+```{r}
+sil_spr_afinn <- sil_spr_nonum %>% 
+  inner_join(get_sentiments(lexicon = "afinn"))
+
+# count the values of the sentiments
+sil_spr_afinn_hist <- sil_spr_afinn %>% 
+  count(value)
+
+ggplot(data = sil_spr_afinn_hist, aes(x = value, y = n))+
+  geom_col(aes(fill = value), show.legend = FALSE)+
+  labs(x = "Sentimental score", y = "Frequency")+
+  theme_minimal()
+```
+
+```{r}
+sil_spr_summary <- sil_spr_afinn %>% 
+  summarize(
+    mean_score = mean(value),
+    median_score = median(value)
+  )
+```
+
+```{r fig.height=6, fig.width=9}
+ss_afinn_n5 <- sil_spr_afinn %>% 
+  filter(! value == -5) %>% 
+  count(word, value, sort = TRUE) %>% 
+  group_by(value) %>% 
+  top_n(5) %>%  # col = n
+  ungroup()
+
+
+ggplot(data = ss_afinn_n5,
+                      aes(x = reorder(word, -n),
+                          y = n,
+                          fill = n))+
+  geom_col(show.legend = FALSE)+
+  facet_wrap(~value, ncol = 2, scales = "free")+
+  labs(x = "", y = "Frequency")+
+  theme_minimal()
+```
+
+
+Second, let's test with emotional words method.
+The NRC Emotion Lexicon is a list of English words and their associations with eight basic emotions (anger, fear, anticipation, trust, surprise, sadness, joy, and disgust) and two sentiments (negative and positive
+
+```{r fig.width=7}
+sil_spr_nrc <- sil_spr_nonum %>% 
+  inner_join(get_sentiments(lexicon = "nrc"))
+
+# Find counts by sentiments
+
+ss_nrc_n <- sil_spr_nrc %>% 
+  count(sentiment, sort = TRUE) 
+
+ggplot(data = ss_nrc_n)+
+  geom_col(aes(x = reorder(sentiment, -n), y = n,
+               fill = sentiment),
+           show.legend = FALSE)+
+  labs(x = "Sediments", y = "Counts")+
+  theme_minimal()
+```
+
+
+
+How do sentiment/top words compare for speeches/documents/etc. from two or more different groups, candidates, etc.?
+
+```{r fig.height=6, fig.width=8}
+ss_nrc_n5 <- sil_spr_nrc %>% 
+  count(word, sentiment, sort = TRUE) %>% 
+  group_by(sentiment) %>% 
+  top_n(5) %>%  # col = n
+  ungroup()
+
+
+ggplot(data = ss_nrc_n5,
+                      aes(x = reorder(word, -n),
+                          y = n,
+                          fill = sentiment))+
+  geom_col(show.legend = FALSE)+
+  facet_wrap(~sentiment, ncol = 2, scales = "free")+
+  labs(x = "", y = "Frequency")+
+  theme_minimal()
+
+```

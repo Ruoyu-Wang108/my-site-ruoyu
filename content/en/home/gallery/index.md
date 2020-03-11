@@ -6,7 +6,7 @@ active = true  # Activate this widget? true/false
 weight = 90  # Order that this section will appear.
 
 title = "Map Gallery"
-subtitle = "With ArcMap platform"
+subtitle = "Designed with ArcMap platform"
 
 [design]
   # Choose how many columns the section has. Valid values: 1 or 2.

@@ -1,14 +1,23 @@
 ---
-output: html_document
+title: Time series exploration and visualization
+author: 
+- admin
+- Haley Grant
+categories: []
+tags:
+  - R
+  - Statistics
+subtitle: 'Pacific giant salamanders in Mack Creek: abundance and weight with forest sections and channel types'
+summary: 'A Chi-squared test, an unpaired two-sample t-test, and a one-way ANOVA test was performed in this report.'
+lastmod: '2019-11-22T15:05:12-08:00'
+featured: no
+image:
+  caption: 'Pacific Giant Salamander on [Oregon Wild](https://oregonwild.org/wildlife/pacific-giant-salamander)'
+  focal_point: ''
+  preview_only: no
+projects: []
 ---
 
-# Pacific giant salamanders in Mack Creek: abundance and weight with forest sections and channel types
-
-#### A report for ESM 206: Statistics and Data Analysis in Environmental Science and Management
-
-#### Ruoyu Wang & Haley Grant
-
-#### 11/22/2019
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.align = "center")
@@ -34,7 +43,7 @@ mack_creek_df <- read_csv("mack_creek_vertebrates.csv") %>%
 ```
 
 
-### Introduction
+### 1. Background
 
 
 Around 1963, sections of forests near Mack Creek, Oregon were clear cut, meaning the trees were uniformly cut down (Gregory 2016). In 1993, Stanley V. Gregory and researchers at the Andrews Forest LTER Site began including Pacific giant salamanders (Dicamptodon tenebrosus) in their study called *Aquatic Vertebrate Population Study in Mack Creek, Andrews Experimental Forest, 1987 to present.* The researchers recorded the weights of salamanders (g) and documented their locations within the area. The two forest sections of Mack Creek include clear cut sections as well as 500-year-old coniferous old growth forests (Gregory 2016). Within the two sections of forests, salamanders are found in Cascade, Pool and Side Channel. This report does not include salamanders found in Isolated Pool, as these areas are separated from the creek. Studying the Pacific giant salamander population in this area is relevant to understanding how new forests- the result of clear cutting- affect local wildlife populations, and how these effects compare to populations living in old growth forests. 
@@ -46,7 +55,7 @@ knitr::include_graphics("Dicamptodon_tenebrosus_2.JPG")
 
 ***Figure. 1*** *Pacific giant salamander (Dicamptodon tenebrosus). Credit: Jeffrey Marsten. [Wikipedia](https://commons.wikimedia.org/wiki/File:Dicamptodon_tenebrosus_2.JPG).*
 
-### Data and Methods
+### 2. Data and Methods
 
 The [data set](https://portal.lternet.edu/nis/mapbrowse?packageid=knb-lter-and.4027.12) used in this report was provided by the LTER Network Data Portal, and full metadata can be found [here](https://portal.lternet.edu/nis/metadataviewer?packageid=knb-lter-and.4027.12). Sections of the forest are specified as clear cut (“CC”) and old growth (“OG”), while channel types are specified as Cascade, “C”, Pool, “P”, and Side Channel, “SC”. A Chi-squared ($\chi$^2^) test was performed to determine if forest section was related to which channel type salamanders were found. Additionally, an unpaired two-sample t-test was used to find out if the weights of salamanders differed significantly between the two forest sections. Finally, a one-way ANOVA test was conducted to determine if there was a significant difference in mean salamander weight among the three channel types between the two forest sections. All analyses and figures were made using R Studio version 1.2.5001.
 

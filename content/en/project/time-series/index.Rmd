@@ -1,6 +1,7 @@
 ---
 title: Time series exploration and visualization
-author: [Ruoyu Wang]
+author: 
+- admin
 date: '2020-01-09'
 slug: time-series
 categories: []

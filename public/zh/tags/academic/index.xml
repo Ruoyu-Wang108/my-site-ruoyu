@@ -13,20 +13,6 @@
     </image>
     
     <item>
-      <title>My Great Post!</title>
-      <link>/zh/project/my-new-project/</link>
-      <pubDate>Thu, 09 Jan 2020 00:00:00 +0000</pubDate>
-      <guid>/zh/project/my-new-project/</guid>
-      <description>
-
-
-&lt;p&gt;Here’s a grest post!&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;plot(cars)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/project/my-new-project/index_files/figure-html/unnamed-chunk-1-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
       <title>Time series exploration and visualization</title>
       <link>/zh/project/time-series/</link>
       <pubDate>Thu, 09 Jan 2020 00:00:00 +0000</pubDate>
