@@ -1,5 +1,5 @@
 ---
-title: Time series exploration and visualization
+title: Statistics Anlysis with Pacific giant salamanders
 author: 
 - admin
 - Haley Grant
@@ -49,7 +49,7 @@ mack_creek_df <- read_csv("mack_creek_vertebrates.csv") %>%
 Around 1963, sections of forests near Mack Creek, Oregon were clear cut, meaning the trees were uniformly cut down (Gregory 2016). In 1993, Stanley V. Gregory and researchers at the Andrews Forest LTER Site began including Pacific giant salamanders (Dicamptodon tenebrosus) in their study called *Aquatic Vertebrate Population Study in Mack Creek, Andrews Experimental Forest, 1987 to present.* The researchers recorded the weights of salamanders (g) and documented their locations within the area. The two forest sections of Mack Creek include clear cut sections as well as 500-year-old coniferous old growth forests (Gregory 2016). Within the two sections of forests, salamanders are found in Cascade, Pool and Side Channel. This report does not include salamanders found in Isolated Pool, as these areas are separated from the creek. Studying the Pacific giant salamander population in this area is relevant to understanding how new forests- the result of clear cutting- affect local wildlife populations, and how these effects compare to populations living in old growth forests. 
 
 
-```{r  out.width = "60%"}
+```{r  out.width = "60%", echo=FALSE}
 knitr::include_graphics("Dicamptodon_tenebrosus_2.JPG") 
 ```
 
