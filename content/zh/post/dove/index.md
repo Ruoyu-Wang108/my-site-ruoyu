@@ -15,8 +15,7 @@ image:
 # - "2"
 # publishDate: "2017-01-01T00:00:00Z"
 # slides: example
-# summary: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis posuere tellus
-#   ac convallis placerat. Proin tincidunt magna sed ex sollicitudin condimentum.
+summary: Designed a new body care line with organic ingredients and recycled paper packages for Dove.
 tags:
 - Sustainable Business
 title: Green Product Line Recommendation for Dove
@@ -36,7 +35,7 @@ Dove should launch a new set of eco-friendly body care products to the market. T
 
 ### Problem Statement 
 
-To better fit in the highly intensive competitive market, follow the sustainability trends, and enhance Dove’s reputation in corporate social responsibility, I recommend Dove to introduce a new eco-friendly product series in body care and baby care. Commodities will adopt organic oat milk as one of the main ingredients with recycled paper packaging in milk carton shape. Customers may be willing to pay more for innovative and environmental friendly goods. Still, it will require time and money to earn necessary certificates and modify normal boxes into shower-friendly containers. 
+To better fit in the intensively competitive market, follow the sustainability trends, and enhance Dove’s reputation in corporate social responsibility, I recommend Dove to introduce a new eco-friendly product series in body care and baby care. Commodities will adopt organic oat milk as one of the main ingredients with recycled paper packaging in milk carton shape. Customers may be willing to pay more for innovative and environmental friendly goods. Still, it will require time and money to earn necessary certificates and modify normal boxes into shower-friendly containers. 
 
 ### Background 
 
@@ -77,7 +76,7 @@ To sum up, huge costs will lie in organic raw materials, schemes for recycled co
 
 ### Recommendation
 
-Dove can also approach popular brands for organic oat milk like Oatly. The cooperation between two different areas will draw much attention and increase profits. When customers choose a body wash, they may discover the organic product associated with their familiar food brands. Other consumers might fall in love with the smell after trying the wash and become potential customers for oak milk.
+Dove can also approach popular brands for organic oat milk like Oatly. The cooperation between two different areas will draw much attention and increase profits. When customers choose a body wash, they may discover the organic product associated with their familiar food brands. Other consumers might fall in love with the smell after trying the wash and become potential customers for oat milk.
 
 
 

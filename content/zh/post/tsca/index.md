@@ -19,8 +19,7 @@ image:
 # - "3"
 # publishDate: "2017-01-01T00:00:00Z"
 # slides: example
-# summary: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis posuere tellus
-#   ac convallis placerat. Proin tincidunt magna sed ex sollicitudin condimentum.
+summary: Conversion of stakeholders, replacement of key players in the Congress, the outdated initial law, and the underlying bipartisan networks all contributed to the bipartisan breakthrough.
 tags:
 - Political Analysis
 title: The Overhaul of Toxic Substances Control Act – “A Perfect Storm”

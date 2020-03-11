@@ -21,8 +21,7 @@ image:
 # - "1"
 #publishDate: "2017-01-01T00:00:00Z"
 #slides: example
-#summary: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis posuere tellus
-#  ac convallis placerat. Proin tincidunt magna sed ex sollicitudin condimentum.
+summary:  Analysis the benefits and costs of a real-life investment case with financial planning.
 tags:
 - Source Themes
 title: Advice on expanding business via budgeting analysis
